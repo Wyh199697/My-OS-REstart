@@ -7,6 +7,12 @@
 	org  07c00h			; Boot 状态, Bios 将把 Boot Sector 加载到 0:7C00 处并开始执行
 %endif
 
+%ifdef _BOOT_DEBUG_
+BaseOfStack	equ 0100h
+%else
+BaseOfStack	equ	07c00h
+%endif
+
 	jmp short LABEL_START		; Start to boot.
 	nop				; 这个 nop 不可少
 
@@ -35,6 +41,11 @@ LABEL_START:
 	mov	ax, cs
 	mov	ds, ax
 	mov	es, ax
+	mov ss,ax
+	mov sp,BaseOfStack
+	xor ah,ah
+	xor dl,dl
+	int 13h
 	Call	DispStr			; 调用显示字符串例程
 	jmp	$			; 无限循环
 DispStr:
@@ -47,5 +58,33 @@ DispStr:
 	int	10h			; int 10h
 	ret
 BootMessage:		db	"Hello, OS world!"
+
+ReadSector:
+	push bp
+	mov bp,sp
+	sub esp,2
+	mov byte [bp-2],cl
+	push bx
+	mov bl,[BPB_SecPerTrk]
+	div bl
+	inc ah
+	mov cl,ah
+	mov dh,al
+	shr al,1
+	mov ch,al
+	and dh,1
+	pop bx
+
+	mov dl,[BS_DrvNum]
+.GoOnReading:
+	mov ah,2
+	mov al,byte [bp-2]
+	int 13h
+	jc .GoOnReading
+
+	add esp,2
+	pop bp
+	ret
+
 times 	510-($-$$)	db	0	; 填充剩下的空间，使生成的二进制代码恰好为512字节
 dw 	0xaa55				; 结束标志
