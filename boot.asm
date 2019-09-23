@@ -18,6 +18,8 @@ BaseOfLoader		equ	09000h	; LOADER.BIN 被加载到的位置 ----  段地址
 OffsetOfLoader		equ	0100h	; LOADER.BIN 被加载到的位置 ---- 偏移地址
 RootDirSectors		equ	14	; 根目录占用空间
 SectorNoOfRootDirectory	equ	19	; Root Directory 的第一个扇区号
+SectorNoOfFAT1	equ	1
+DeltaSectorNo	equ	17
 ;================================================================================================
 
 	jmp short LABEL_START		; Start to boot.
@@ -50,6 +52,15 @@ LABEL_START:
 	mov	es, ax
 	mov	ss, ax
 	mov	sp, BaseOfStack
+; 清屏
+	mov	ax, 0600h		; AH = 6,  AL = 0h
+	mov	bx, 0700h		; 黑底白字(BL = 07h)
+	mov	cx, 0			; 左上角: (0, 0)
+	mov	dx, 0184fh		; 右下角: (80, 50)
+	int	10h			; int 10h
+
+	mov	dh, 0			; "Booting  "
+	call	DispStr			; 显示字符串
 
 	xor	ah, ah	; `.
 	xor	dl, dl	;  |  软驱复位
@@ -111,9 +122,44 @@ LABEL_NO_LOADERBIN:
 %endif
 
 LABEL_FILENAME_FOUND:			; 找到 LOADER.BIN 后便来到这里继续
+	mov ax,RootDirSectors
+	and di,0FFE0h
+	add di,01Ah
+	mov cx,word [es:di]
+	push cx
+	add cx,ax
+	add cx,DeltaSectorNo
+	mov ax,BaseOfLoader
+	mov es,ax
+	mov bx,OffsetOfLoader
+	mov ax,cx
+
+LABEL_GOON_LOADING_FILE:
+	push ax
+	push bx
+	mov ah,0Eh
+	mov al,'.'
+	mov bl,0Fh
+	int 10h
+	pop bx
+	pop ax
+
+	mov cl,1
+	call ReadSector
+	pop ax
+	call GetFATEntry
+	cmp ax,0fffh
+	jz LABEL_FILE_LOADED
+	push ax
+	mov dx,RootDirSectors
+	add ax,dx
+	add ax,DeltaSectorNo
+	add bx,[BPB_BytsPerSec]
+	jmp LABEL_GOON_LOADING_FILE
+LABEL_FILE_LOADED:
 	mov dh,1
 	call DispStr
-	jmp	$			; 代码暂时停在这里
+	jmp BaseOfLoader:OffsetOfLoader
 
 
 
@@ -195,6 +241,44 @@ ReadSector:
 	add	esp, 2
 	pop	bp
 
+	ret
+;===================================
+GetFATEntry:
+	push es
+	push bx
+	push ax
+	mov ax,BaseOfLoader
+	sub ax,0100h
+	mov es,ax
+	pop ax
+	mov byte [bOdd],0
+	mov bx,3
+	mul bx
+	mov bx,2
+	div bx
+	cmp dx,0
+	jz LABEL_EVEN
+	mov byte [bOdd],1
+LABEL_EVEN:
+	xor dx,dx
+	mov bx,[BPB_BytsPerSec]
+	div bx
+	push dx
+	mov bx,0
+	add ax,SectorNoOfFAT1
+	mov cl,2
+	call ReadSector
+	pop dx
+	add bx,dx
+	mov ax,[es:bx]
+	cmp byte [bOdd],1
+	jnz LABEL_EVEN_2
+	shr ax,4
+LABEL_EVEN_2:
+	and ax,0FFFh
+LABEL_GET_FAT_ENRY_OK:
+	pop bx
+	pop es
 	ret
 
 times 	510-($-$$)	db	0	; 填充剩下的空间，使生成的二进制代码恰好为512字节
