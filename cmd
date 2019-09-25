@@ -13,3 +13,7 @@ sudo umount /mnt/floppy
 sudo mv nasm.vim 1.vim
 sudo mv asm.vim nasm.vim
 sudo mv 1.vim asm.vim
+
+nasm -f elf foo.asm -o foo.o
+gcc -m32 -c bar.c -o bar.o
+ld -m elf_i386 -s -o foobar foo.o bar.o
