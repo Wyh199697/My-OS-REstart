@@ -1,8 +1,11 @@
 nasm boot.asm -o boot.bin
 dd if=boot.bin of=a.img bs=512 count=1 conv=notrunc
 nasm loader.asm -o loader.bin
+nasm -f elf kernel.asm -o kernel.o
+ld -s -Ttext 0x30400 -o kernel.bin kernel.o
 sudo mount -o loop a.img /mnt/floppy
 sudo cp loader.bin /mnt/floppy -v
+sudo cp kernel.bin /mnt/floppy -v
 sudo umount /mnt/floppy
 
 nasm boot.asm -o boot.com

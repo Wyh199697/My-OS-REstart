@@ -25,8 +25,7 @@ SelectorVideo	equ	LABEL_DESC_VIDEO - LABEL_GDT + SA_RPL3
 ;=====================
 ;==========================
 BaseOfStack	equ	0100h
-PageDirBase	equ	100000h
-PageTblBase	equ	101000h
+
 ;===========================
 
 
@@ -297,6 +296,11 @@ LABEL_PM_START:
 	mov	ah, 0Fh				; 0000: 黑底    1111: 白字
 	mov	al, 'P'
 	mov	[gs:((80 * 0 + 39) * 2)], ax	; 屏幕第 0 行, 第 39 列
+	
+	call InitKernel
+
+	jmp SelectorFlatC:KernelEntryPointPhyAddr
+
 	jmp	$
 
 
@@ -400,6 +404,29 @@ SetupPaging:
 
 	ret
 ; 分页机制启动完毕 ----------------------------------------------------------
+;=======================================
+InitKernel:
+	xor esi,esi
+	mov cx,word[BaseOfKernelFilePhyAddr + 2ch] ;cx=段的数量
+	movzx ecx,cx
+	mov esi,[BaseOfKernelFilePhyAddr + 1ch]
+	add esi,BaseOfKernelFilePhyAddr ;esi=program header table的地址
+.Begin:
+	mov eax,[esi+0]
+	cmp eax,0
+	jz .NoAction
+	push dword [esi+010h]	;代码段在文件中的长度
+	mov eax,[esi+04h]	;段在文件中的偏移量
+	add eax,BaseOfKernelFilePhyAddr	;eax=代码断的地址
+	push eax
+	push dword[esi+08h]	;代码段载入内存的虚拟地址
+	call MemCpy
+	add esp,12
+.NoAction:
+	add esi,020h
+	dec ecx
+	jnz .Begin
+	ret
 
 
 ; SECTION .data1 之开始 ---------------------------------------------------------------------------------------------
