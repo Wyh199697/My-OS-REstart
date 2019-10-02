@@ -20,3 +20,5 @@ sudo mv 1.vim asm.vim
 nasm -f elf kernel.asm -o kernel.o
 gcc -m32 -c bar.c -o bar.o
 ld -m elf_i386 -s -o kernel.bin kernel.o
+
+为什么内核加载进来之后还需要再在内存中移动一次呢，因为后面都是c和汇编一起用，都是32位代码，编译链接出来的都是elf文件，所以要根据elf文件再次移动一次内核。
