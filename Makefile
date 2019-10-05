@@ -1,36 +1,65 @@
-##################################################
-# Makefile
-##################################################
+ENTRYPOINT = 0x30400
 
-BOOT:=boot.asm
-LDR:=loader.asm
-KERNEL:=kernel.asm
-BOOT_BIN:=$(subst .asm,.bin,$(BOOT))
-LDR_BIN:=$(subst .asm,.bin,$(LDR))
-KERNEL_BIN:=$(subst .asm,.bin,$(KERNEL))
+ENTRYOFFSET = 0x400
 
-IMG:=a.img
-FLOPPY:=/mnt/floppy/
+ASM = nasm
+DASM = ndisasm
+CC = gcc
+LD = ld
+ASMBFLAGS = -I boot/include/
+ASMKFLAGS = -f elf
+CFLAGS = -I include/ -m32 -c -fno-builtin
+LDFLAGS = -s -Ttext $(ENTRYPOINT) -e $(ENTRYOFFSET)
 
-.PHONY : everything
+ORANGESBOOT = boot/boot.bin boot/loader.bin
+ORANGESKERNEL = kernel/kernel.bin
+OBJS = kernel/kernel.o kernel/start.o lib/string.o lib/kliba.o
+DASMOUTPUT = kernel.bin.asm
 
-everything : $(BOOT_BIN) $(LDR_BIN) $(KERNEL_BIN)
-	dd if=$(BOOT_BIN) of=$(IMG) bs=512 count=1 conv=notrunc
-	sudo mount -o loop $(IMG) $(FLOPPY)
-	sudo cp $(LDR_BIN) $(FLOPPY) -v
-	sudo cp $(KERNEL_BIN) $(FLOPPY) -v
-	sudo umount $(FLOPPY)
 
-clean :
-	rm -f $(BOOT_BIN) $(LDR_BIN) $(KERNEL_BIN) *.o
+.PHONY : everything final image clean realclean disasm all buildimg
 
-$(BOOT_BIN) : $(BOOT)
-	nasm $< -o $@
+everything : $(ORANGESBOOT) $(ORANGESKERNEL)
 
-$(LDR_BIN) : $(LDR)
-	nasm $< -o $@
+all : realclean everything
 
-$(KERNEL_BIN) : $(KERNEL)
-	nasm -f elf -o $(subst .asm,.o,$(KERNEL)) $<
-	ld -s -o $@ $(subst .asm,.o,$(KERNEL))
+final : all clean
 
+image : final buildimg
+
+clean : 
+	rm -f $(OBJS)
+
+realclean : 
+	rm -f $(OBJS) $(ORANGESBOOT) $(ORANGESKERNEL)
+
+disasm : 
+	$(DASM) $(DASMFLAGS) $(ORANGESKERNEL) > $(DASMOUTPUT)
+
+buildimg : 
+	dd if=boot/boot.bin of=a.img bs=512 count=1 conv=notrunc
+	sudo mount -o loop a.img /mnt/floppy/
+	sudo cp -fv boot/loader.bin /mnt/floppy/
+	sudo cp -fv kernel/kernel.bin /mnt/floppy
+	sudo umount /mnt/floppy
+
+boot/boot.bin : boot/boot.asm boot/include/fat12hdr.inc boot/include/load.inc
+	$(ASM) $(ASMBFLAGS) -o $@ $<
+
+boot/loader.bin : boot/loader.asm boot/include/fat12hdr.inc boot/include/load.inc boot/include/pm.inc
+	$(ASM) $(ASMBFLAGS) -o $@ $<
+	
+$(ORANGESKERNEL) : $(OBJS)
+	$(LD) $(LDFLAGS) -o $(ORANGESKERNEL) $(OBJS)
+
+kernel/kernel.o : kernel/kernel.asm
+	$(ASM) $(ASMKFLAGS) -o $@ $<
+
+lib/string.o : lib/string.asm
+	$(ASM) $(ASMKFLAGS) -o $@ $<
+
+lib/kliba.o : lib/kliba.asm
+	$(ASM) $(ASMKFLAGS) -o $@ $<
+
+kernel/start.o : kernel/start.c include/const.h include/type.h include/protect.h
+	$(CC) $(CFLAGS) -o $@ $<

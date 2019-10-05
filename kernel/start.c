@@ -18,7 +18,9 @@ PUBLIC void cstart(){
 	u16* p_gdt_limit = (u16*)(&gdt_ptr[0]);//
 	u32* p_gdt_base = (u32*)(&gdt_ptr[2]);//
 	*p_gdt_limit = GDT_SIZE * sizeof(DESCRIPTOR) - 1;//
-	*p_gdt_base = (u32*)(&gdt);//
+	*p_gdt_base  = (u32)&gdt;
+
+	disp_str("-----\"cstart\" ends-----\n");
 	
 	/*u16 limit = GDT_SIZE * sizeof(DESCRIPTOR) - 1;
 	u32 base = (u32)(&gdt);

@@ -3,7 +3,7 @@ org	0100h
 
 	jmp LABEL_START
 
-%include "fat12hdr.inc"
+%include "fat12hdr.inc"		;包含这个文件不是因为识别作用而是要用到里面一些常量
 %include "load.inc"
 %include "pm.inc"
 
