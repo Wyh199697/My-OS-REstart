@@ -42,8 +42,8 @@ disp_str:
 	pop ebp
 	ret
 ;=============================
-out_byte:	;需要修改
-	mov edx,[esp+4]
+out_byte:	;需要修改,想不通
+	mov dx,[esp+4]
 	mov al,[esp+4+4]
 	out dx,al
 	nop
