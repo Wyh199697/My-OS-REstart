@@ -8,12 +8,12 @@ CC = gcc
 LD = ld
 ASMBFLAGS = -I boot/include/
 ASMKFLAGS = -f elf
-CFLAGS = -I include/ -m32 -c -fno-builtin
+CFLAGS = -I include/ -m32 -c -fno-builtin -fno-stack-protector
 LDFLAGS = -s -Ttext $(ENTRYPOINT) -e $(ENTRYOFFSET)
 
 ORANGESBOOT = boot/boot.bin boot/loader.bin
 ORANGESKERNEL = kernel/kernel.bin
-OBJS = kernel/kernel.o kernel/start.o lib/string.o lib/kliba.o
+OBJS = kernel/kernel.o kernel/start.o lib/string.o lib/kliba.o kernel/i8259.o kernel/global.o lib/klib.o kernel/protect.o
 DASMOUTPUT = kernel.bin.asm
 
 
@@ -61,5 +61,21 @@ lib/string.o : lib/string.asm
 lib/kliba.o : lib/kliba.asm
 	$(ASM) $(ASMKFLAGS) -o $@ $<
 
-kernel/start.o : kernel/start.c include/const.h include/type.h include/protect.h
+kernel/start.o : kernel/start.c include/type.h include/const.h include/protect.h include/string.h include/proto.h include/global.h
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/protect.o: kernel/protect.c /usr/include/stdc-predef.h include/type.h \
+ include/const.h include/protect.h include/global.h include/proto.h
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/i8259.o : kernel/i8259.c include/type.h include/const.h include/protect.h include/proto.h
+	$(CC) $(CFLAGS) -o $@ $<
+	
+kernel/global.o: kernel/global.c include/type.h \
+ include/const.h include/protect.h include/proto.h include/global.h
+	$(CC) $(CFLAGS) -o $@ $<
+	
+lib/klib.o: lib/klib.c include/type.h \
+ include/const.h include/protect.h include/proto.h include/string.h \
+ include/global.h
 	$(CC) $(CFLAGS) -o $@ $<
