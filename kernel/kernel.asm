@@ -3,6 +3,7 @@ SELECTOR_KERNEL_CS equ 8
 extern cstart
 extern exception_handler
 extern spurious_irq
+extern kernel_main
 
 extern gdt_ptr
 extern idt_ptr
@@ -63,7 +64,8 @@ csinit:
 	;ud2
 	;jmp 0x40:0
 	sti
-	hlt
+	;hlt
+	jmp SELECTOR_KERNEL_CS:kernel_main
 	
 
 ; ---------------------------------
@@ -77,7 +79,8 @@ csinit:
 
 ALIGN   16
 hwint00:                ; Interrupt routine for irq 0 (the clock).
-        hwint_master    0
+        ;hwint_master    0
+		iretd
 
 ALIGN   16
 hwint01:                ; Interrupt routine for irq 1 (keyboard)

@@ -23,6 +23,8 @@ ld -m elf_i386 -s -o kernel.bin kernel.o
 
 为什么内核加载进来之后还需要再在内存中移动一次呢，因为后面都是c和汇编一起用，都是32位代码，编译链接出来的都是elf文件，所以要根据elf文件再次移动一次内核。
 
+需要注意的是，#ifndef起到的效果是防止一个源文件两次包含同一个头文件，而不是防止两个源文件包含同一个头文件。
+
 nasm boot.asm -o boot.bin
 dd if=boot.bin of=a.img bs=512 count=1 conv=notrunc
 nasm loader.asm -o loader.bin
@@ -35,4 +37,6 @@ sudo mount -o loop a.img /mnt/floppy
 sudo cp loader.bin /mnt/floppy -v
 sudo cp kernel.bin /mnt/floppy -v
 sudo umount /mnt/floppy
+
+gcc -M start.c -I include
 

@@ -36,3 +36,13 @@ PUBLIC void disp_int(int input){
 	char ouput[16];
 	disp_str(itoa(ouput, input));
 }
+
+PUBLIC void delay(int time){
+	int i, j, k;
+	for(i = 0; i < time; ++i){
+		for(j = 0; j < 10; ++j){
+			for(k = 0; k < 10000; ++k){
+			}
+		}
+	}
+}

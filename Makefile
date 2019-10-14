@@ -9,11 +9,11 @@ LD = ld
 ASMBFLAGS = -I boot/include/
 ASMKFLAGS = -f elf
 CFLAGS = -I include/ -m32 -c -fno-builtin -fno-stack-protector
-LDFLAGS = -s -Ttext $(ENTRYPOINT) -e $(ENTRYOFFSET)
+LDFLAGS = -m elf_i386 -s -Ttext $(ENTRYPOINT) -e $(ENTRYOFFSET)
 
 ORANGESBOOT = boot/boot.bin boot/loader.bin
 ORANGESKERNEL = kernel/kernel.bin
-OBJS = kernel/kernel.o kernel/start.o lib/string.o lib/kliba.o kernel/i8259.o kernel/global.o lib/klib.o kernel/protect.o
+OBJS = kernel/kernel.o kernel/start.o lib/string.o lib/kliba.o kernel/i8259.o kernel/global.o lib/klib.o kernel/protect.o kernel/main.o
 DASMOUTPUT = kernel.bin.asm
 
 
@@ -76,6 +76,11 @@ kernel/global.o: kernel/global.c include/type.h \
 	$(CC) $(CFLAGS) -o $@ $<
 	
 lib/klib.o: lib/klib.c include/type.h \
+ include/const.h include/protect.h include/proto.h include/string.h \
+ include/global.h
+	$(CC) $(CFLAGS) -o $@ $<
+
+main.o: kernel/main.c include/type.h \
  include/const.h include/protect.h include/proto.h include/string.h \
  include/global.h
 	$(CC) $(CFLAGS) -o $@ $<
