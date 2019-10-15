@@ -8,3 +8,6 @@ PUBLIC void init_8259A();
 PUBLIC void disp_color_str(char * info, int num);
 PUBLIC void disp_int(int input);
 PUBLIC void delay(int time);
+PUBLIC u32 seg2phys(u16 seg);
+PUBLIC void TestA();
+PUBLIC void restart();

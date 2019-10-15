@@ -1,10 +1,13 @@
 #include "type.h"
 #include "const.h"
 #include "protect.h"
+#include "proc.h"
 #include "global.h"
 #include "proto.h"
+#include "string.h"
 
 PRIVATE void init_idt_desc(u8 vector, u8 desc_type, int_handler handler, u8 privilege);
+PRIVATE void init_descriptor(DESCRIPTOR * p_desc, u32 base, u32 limit, u16 attribute);
 
 void	divide_error();
 void	single_step_exception();
@@ -138,6 +141,14 @@ PUBLIC void init_prot()
 
         init_idt_desc(INT_VECTOR_IRQ8 + 7,      DA_386IGate,
                       hwint15,                  PRIVILEGE_KRNL);
+		memset(&tss, 0, sizeof(tss));
+		init_descriptor(&gdt[INDEX_TSS], 
+				vir2phys(seg2phys(SELECTOR_KERNEL_DS), &tss),
+					sizeof(tss) - 1, DA_386TSS);//elf文件会根据程序入口载入地址，自然会带org，&tss会有文件内偏移加程序入口，就是对于整个段的偏移，因为这个段的基地址是0
+		tss.iobase = sizeof(tss);
+		init_descriptor(&gdt[INDEX_LDT_FIRST], 
+				vir2phys(seg2phys(SELECTOR_KERNEL_DS), proc_table[0].ldts), 
+				LDT_SIZE * sizeof(DESCRIPTOR) -1, DA_LDT);
 }
 
 PRIVATE void init_idt_desc(u8 vector, u8 desc_type, int_handler handler, u8 privilege){
@@ -148,6 +159,20 @@ PRIVATE void init_idt_desc(u8 vector, u8 desc_type, int_handler handler, u8 priv
 	p_gate->dcount = 0;
 	p_gate->attr = (desc_type | privilege << 5);
 	p_gate->offset_high = (base >> 16) & 0x0ffff;
+}
+
+PRIVATE void init_descriptor(DESCRIPTOR * p_desc, u32 base, u32 limit, u16 attribute){
+	p_desc->limit_low = limit & 0xffff;
+	p_desc->base_low = base & 0xffff;
+	p_desc->base_mid = (base >> 16) & 0xff;
+	p_desc->attr1 = attribute & 0xff;
+	p_desc->limit_high_attr2 = (limit >> 16) & 0xf | (attribute >> 8) & 0xf0;
+	p_desc->base_high = base >> 24 & 0xff;
+}
+
+PUBLIC u32 seg2phys(u16 seg){
+	DESCRIPTOR *p_desc = &gdt[seg>>3];
+	return (p_desc->base_high<<24 | p_desc->base_mid<<16 | p_desc->base_low);;
 }
 
 PUBLIC void exception_handler(int vec_no,int err_code,int eip,int cs,int eflags)

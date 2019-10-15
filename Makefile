@@ -7,7 +7,7 @@ DASM = ndisasm
 CC = gcc
 LD = ld
 ASMBFLAGS = -I boot/include/
-ASMKFLAGS = -f elf
+ASMKFLAGS = -I include/ -f elf
 CFLAGS = -I include/ -m32 -c -fno-builtin -fno-stack-protector
 LDFLAGS = -m elf_i386 -s -Ttext $(ENTRYPOINT) -e $(ENTRYOFFSET)
 
@@ -52,7 +52,7 @@ boot/loader.bin : boot/loader.asm boot/include/fat12hdr.inc boot/include/load.in
 $(ORANGESKERNEL) : $(OBJS)
 	$(LD) $(LDFLAGS) -o $(ORANGESKERNEL) $(OBJS)
 
-kernel/kernel.o : kernel/kernel.asm
+kernel/kernel.o : kernel/kernel.asm include/sconst.inc
 	$(ASM) $(ASMKFLAGS) -o $@ $<
 
 lib/string.o : lib/string.asm
@@ -61,26 +61,26 @@ lib/string.o : lib/string.asm
 lib/kliba.o : lib/kliba.asm
 	$(ASM) $(ASMKFLAGS) -o $@ $<
 
-kernel/start.o : kernel/start.c include/type.h include/const.h include/protect.h include/string.h include/proto.h include/global.h
+kernel/start.o : kernel/start.c include/type.h include/const.h include/protect.h include/string.h include/proto.h include/global.h include/proc.h
 	$(CC) $(CFLAGS) -o $@ $<
 
 kernel/protect.o: kernel/protect.c /usr/include/stdc-predef.h include/type.h \
- include/const.h include/protect.h include/global.h include/proto.h
+ include/const.h include/protect.h include/global.h include/proto.h include/proc.h
 	$(CC) $(CFLAGS) -o $@ $<
 
-kernel/i8259.o : kernel/i8259.c include/type.h include/const.h include/protect.h include/proto.h
+kernel/i8259.o : kernel/i8259.c include/type.h include/const.h include/protect.h include/proto.h include/proc.h
 	$(CC) $(CFLAGS) -o $@ $<
 	
 kernel/global.o: kernel/global.c include/type.h \
- include/const.h include/protect.h include/proto.h include/global.h
+ include/const.h include/protect.h include/proto.h include/global.h include/proc.h
 	$(CC) $(CFLAGS) -o $@ $<
 	
 lib/klib.o: lib/klib.c include/type.h \
  include/const.h include/protect.h include/proto.h include/string.h \
- include/global.h
+ include/global.h include/proc.h
 	$(CC) $(CFLAGS) -o $@ $<
 
 main.o: kernel/main.c include/type.h \
  include/const.h include/protect.h include/proto.h include/string.h \
- include/global.h
+ include/global.h include/proc.h
 	$(CC) $(CFLAGS) -o $@ $<
