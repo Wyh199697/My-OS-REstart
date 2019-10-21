@@ -42,7 +42,6 @@ PUBLIC void kernel_main(){
 
 	p_proc_ready	= proc_table;
 	k_reenter = 0;
-	put_irq_handler(CLOCK_IRQ, clock_handler);
 	restart();
 	
 

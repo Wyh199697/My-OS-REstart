@@ -58,7 +58,7 @@ kernel/kernel.o : kernel/kernel.asm include/sconst.inc
 lib/string.o : lib/string.asm
 	$(ASM) $(ASMKFLAGS) -o $@ $<
 
-lib/kliba.o : lib/kliba.asm
+lib/kliba.o : lib/kliba.asm include/sconst.inc
 	$(ASM) $(ASMKFLAGS) -o $@ $<
 
 kernel/start.o : kernel/start.c include/type.h include/const.h include/protect.h include/string.h include/proto.h include/global.h include/proc.h

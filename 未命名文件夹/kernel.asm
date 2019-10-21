@@ -93,7 +93,7 @@ csinit:
 	out	INT_M_CTL, al		; /
 	sti	; CPU在响应中断的过程中会自动关中断，这句之后就允许响应新的中断
 	push	%1			; `.
-	call	[irq_table + 4 * %1]	;  | 中断处理程序
+	call	[irq_table + 4 * v%1]	;  | 中断处理程序
 	pop	ecx			; /
 	cli
 	in	al, INT_M_CTLMASK	; `.
