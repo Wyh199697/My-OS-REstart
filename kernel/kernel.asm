@@ -5,12 +5,19 @@ extern cstart
 extern exception_handler
 extern spurious_irq
 extern kernel_main
+extern disp_str
+extern delay
+extern clock_handler
 
 extern gdt_ptr
 extern idt_ptr
 extern disp_pos
 extern p_proc_ready
 extern tss
+extern k_reenter
+
+[SECTION .data]
+clock_int_msg	db '^',0
 
 [SECTION .bss]
 StackSpace	resb	2 * 1024
@@ -85,9 +92,55 @@ csinit:
 ; ---------------------------------
 
 ALIGN   16
-hwint00:                ; Interrupt routine for irq 0 (the clock).
-        ;hwint_master    0
-		iretd
+hwint00: ; Interrupt routine for irq 0 (the clock).
+	sub esp,4
+	pushad
+	push ds
+	push es
+	push fs
+	push gs
+	mov dx,ss
+	mov ds,dx
+	mov es,dx
+	
+    inc	byte [gs:0]	; 改变屏幕第 0 行, 第 0 列的字符
+	mov	al, EOI		; `. reenable
+	out	INT_M_CTL, al	; / master 8259
+
+	inc dword [k_reenter]
+	cmp dword [k_reenter],0
+	jne .re_enter
+
+	mov esp,StackTop
+	
+	sti
+
+	push 0
+	call clock_handler
+	add esp,4
+	;push clock_int_msg
+	;call disp_str
+	;add esp,4		;msg是文件内的偏移加上程序的入口地址=线性地址(物理地址)
+	;push 10
+	;call delay
+	;add esp,4
+
+	cli
+
+	mov esp,[p_proc_ready]
+	lldt [esp+P_LDT_SEL]
+	lea eax,[esp+P_STACKTOP]
+	mov dword [tss+TSS3_S_SP0],eax ;主要是因为多进程要不断改变sp0的值
+
+.re_enter:
+	dec dword[k_reenter]
+	pop gs
+	pop fs
+	pop es
+	pop ds
+	popad
+	add esp,4
+	iretd
 
 ALIGN   16
 hwint01:                ; Interrupt routine for irq 1 (keyboard)

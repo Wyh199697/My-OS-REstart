@@ -142,13 +142,16 @@ PUBLIC void init_prot()
         init_idt_desc(INT_VECTOR_IRQ8 + 7,      DA_386IGate,
                       hwint15,                  PRIVILEGE_KRNL);
 		memset(&tss, 0, sizeof(tss));
+		tss.ss0		= SELECTOR_KERNEL_DS;
 		init_descriptor(&gdt[INDEX_TSS], 
 				vir2phys(seg2phys(SELECTOR_KERNEL_DS), &tss),
 					sizeof(tss) - 1, DA_386TSS);//elf文件会根据程序入口载入地址，自然会带org，&tss会有文件内偏移加程序入口，就是对于整个段的偏移，因为这个段的基地址是0
 		tss.iobase = sizeof(tss);
-		init_descriptor(&gdt[INDEX_LDT_FIRST], 
-				vir2phys(seg2phys(SELECTOR_KERNEL_DS), proc_table[0].ldts), 
+		for(int i = 0; i < NR_TASKS; ++i){
+		init_descriptor(&gdt[INDEX_LDT_FIRST + i], 
+				vir2phys(seg2phys(SELECTOR_KERNEL_DS), proc_table[i].ldts), 
 				LDT_SIZE * sizeof(DESCRIPTOR) -1, DA_LDT);
+		}
 }
 
 PRIVATE void init_idt_desc(u8 vector, u8 desc_type, int_handler handler, u8 privilege){

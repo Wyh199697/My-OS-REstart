@@ -12,3 +12,5 @@ EXTERN PROCESS proc_table[NR_TASKS];
 EXTERN	TSS		tss;
 EXTERN	PROCESS*	p_proc_ready;
 EXTERN char task_stack[STACK_SIZE_TOTAL];
+EXTERN int k_reenter;
+extern TASK task_table[];

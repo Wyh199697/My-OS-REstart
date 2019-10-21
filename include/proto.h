@@ -10,4 +10,7 @@ PUBLIC void disp_int(int input);
 PUBLIC void delay(int time);
 PUBLIC u32 seg2phys(u16 seg);
 PUBLIC void TestA();
+PUBLIC void TestB();
+PUBLIC void TestC();
 PUBLIC void restart();
+PUBLIC char* strcpy(char*src, char*dst);

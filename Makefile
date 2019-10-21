@@ -13,7 +13,7 @@ LDFLAGS = -m elf_i386 -s -Ttext $(ENTRYPOINT) -e $(ENTRYOFFSET)
 
 ORANGESBOOT = boot/boot.bin boot/loader.bin
 ORANGESKERNEL = kernel/kernel.bin
-OBJS = kernel/kernel.o kernel/start.o lib/string.o lib/kliba.o kernel/i8259.o kernel/global.o lib/klib.o kernel/protect.o kernel/main.o
+OBJS = kernel/kernel.o kernel/start.o lib/string.o lib/kliba.o kernel/i8259.o kernel/global.o lib/klib.o kernel/protect.o kernel/main.o kernel/clock.o
 DASMOUTPUT = kernel.bin.asm
 
 
@@ -81,6 +81,11 @@ lib/klib.o: lib/klib.c include/type.h \
 	$(CC) $(CFLAGS) -o $@ $<
 
 main.o: kernel/main.c include/type.h \
+ include/const.h include/protect.h include/proto.h include/string.h \
+ include/global.h include/proc.h
+	$(CC) $(CFLAGS) -o $@ $<
+
+clock.o: kernel/clock.c include/type.h \
  include/const.h include/protect.h include/proto.h include/string.h \
  include/global.h include/proc.h
 	$(CC) $(CFLAGS) -o $@ $<
