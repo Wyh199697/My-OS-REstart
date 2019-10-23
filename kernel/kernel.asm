@@ -8,6 +8,7 @@ extern kernel_main
 extern disp_str
 extern delay
 extern clock_handler
+extern sys_call_table
 
 extern gdt_ptr
 extern idt_ptr
@@ -61,6 +62,7 @@ global  hwint12
 global  hwint13
 global  hwint14
 global  hwint15
+global sys_call
 
 _start:
 	mov esp, StackTop
@@ -322,7 +324,7 @@ save:
 	mov dx,ss
 	mov ds,dx
 	mov es,dx
-	mov eax,esp
+	mov esi,esp
 
 	inc dword[k_reenter]
 	cmp dword[k_reenter],0
@@ -330,10 +332,10 @@ save:
 
 	mov esp,StackTop
 	push restart
-	jmp [eax+RETADR - P_STACKBASE]
+	jmp [esi+RETADR - P_STACKBASE]
 .1:
 	push restart_reenter
-	jmp [eax+RETADR - P_STACKBASE]
+	jmp [esi+RETADR - P_STACKBASE]
 
 restart:
 	mov esp, [p_proc_ready]
@@ -351,3 +353,11 @@ restart_reenter:
 	add esp,4
 
 	iretd
+
+sys_call:
+	call save
+	sti			;允许硬件中断
+	call [sys_call_table+4*eax]
+	mov [esi+EAXREG-P_STACKBASE],eax	;保存eax的值
+	cli
+	ret			;return之后上面的代码会执行iretd

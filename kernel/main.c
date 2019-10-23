@@ -13,6 +13,10 @@ PUBLIC void kernel_main(){
 	TASK *p_task = task_table;
 	char *p_task_stack = task_stack + STACK_SIZE_TOTAL;
 	u16 selector_ldt = SELECTOR_LDT_FIRST;
+	
+	proc_table[0].ticks = proc_table[0].priority = 300;
+	proc_table[1].ticks = proc_table[1].priority = 900;
+	proc_table[2].ticks = proc_table[2].priority = 1500;
 
 	for(int i = 0; i < NR_TASKS; ++i){
 		strcpy(p_proc->p_name, p_task->name);
@@ -33,6 +37,7 @@ PUBLIC void kernel_main(){
 		p_proc->regs.eip= (u32)p_task->initial_eip;
 		p_proc->regs.esp= (u32)p_task_stack;
 		p_proc->regs.eflags = 0x1202;	// IF=1, IOPL=1, bit 2 is always 1.
+		
 
 		p_proc++;
 		p_task++;
@@ -42,6 +47,13 @@ PUBLIC void kernel_main(){
 
 	p_proc_ready	= proc_table;
 	k_reenter = 0;
+	ticks = 0;
+
+	out_byte(TIMER_MODE, RATE_GENERATOR);
+        out_byte(TIMER0, (u8) (TIMER_FREQ/HZ) );
+        out_byte(TIMER0, (u8) ((TIMER_FREQ/HZ) >> 8));
+
+
 	put_irq_handler(CLOCK_IRQ, clock_handler);
 	restart();
 	
@@ -50,33 +62,34 @@ PUBLIC void kernel_main(){
 }
 
 void TestA(){
-	int i = 0;
+//	int i = 0;
 	while(1){
+	//	disp_int(get_ticks());
 		disp_str("A");
-		disp_int(i++);
+	//	disp_int(i++);
 		disp_str(".");
-		delay(10);
+		milli_delay(300);
 	}
 }
 
 void TestB()
 {
-	int i = 0x1000;
+//	int i = 0x1000;
 	while(1){
 		disp_str("B");
-		disp_int(i++);
+//		disp_int(i++);
 		disp_str(".");
-		delay(10);
+		milli_delay(900);
 	}
 }
 
 void TestC()
 {
-	int i = 0x2000;
+//	int i = 0x2000;
 	while(1){
 		disp_str("C");
-		disp_int(i++);
+//		disp_int(i++);
 		disp_str(".");
-		delay(10);
+		milli_delay(1500);
 	}
 }

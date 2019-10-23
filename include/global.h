@@ -15,3 +15,5 @@ EXTERN char task_stack[STACK_SIZE_TOTAL];
 EXTERN int k_reenter;
 extern TASK task_table[];
 EXTERN irq_handler irq_table[NR_IRQ];
+extern system_call sys_call_table[NR_SYS_CALL];
+EXTERN int ticks;
