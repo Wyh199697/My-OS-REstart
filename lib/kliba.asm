@@ -8,6 +8,7 @@ extern disp_pos
 
 global disp_str
 global out_byte
+global in_byte
 global disp_color_str
 global  enable_irq
 global  disable_irq

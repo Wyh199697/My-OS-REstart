@@ -26,3 +26,4 @@ PUBLIC int sys_get_ticks();
 PUBLIC void schedule();
 PUBLIC void milli_delay(int milli_sec);
 PUBLIC void disp_str(char*info);
+PUBLIC void keyboard_handler(int irq);

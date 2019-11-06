@@ -55,12 +55,13 @@ PUBLIC void kernel_main(){
 
 
 	put_irq_handler(CLOCK_IRQ, clock_handler);
+	put_irq_handler(KEYBOARD_IRQ, keyboard_handler);
 	
-	disp_pos = 0;
+	/*disp_pos = 0;
 	for (int i = 0; i < 80*25; i++) {
 		disp_str(" ");
 	}
-	disp_pos = 0;
+	disp_pos = 0;*/
 	restart();
 	
 
@@ -74,7 +75,7 @@ void TestA()
 {
 	int i = 0;
 	while (1) {
-		disp_color_str("A.", BRIGHT | MAKE_COLOR(BLACK, RED));
+		//disp_color_str("A.", BRIGHT | MAKE_COLOR(BLACK, RED));
 		//disp_int(get_ticks());
 		milli_delay(200);
 	}
@@ -87,7 +88,7 @@ void TestB()
 {
 	int i = 0x1000;
 	while(1){
-		disp_color_str("B.", BRIGHT | MAKE_COLOR(BLACK, RED));
+		//disp_color_str("B.", BRIGHT | MAKE_COLOR(BLACK, RED));
 		//disp_int(get_ticks());
 		milli_delay(200);
 	}
@@ -100,7 +101,7 @@ void TestC()
 {
 	int i = 0x2000;
 	while(1){
-		disp_color_str("C.", BRIGHT | MAKE_COLOR(BLACK, RED));
+		//disp_color_str("C.", BRIGHT | MAKE_COLOR(BLACK, RED));
 		//disp_int(get_ticks());
 		milli_delay(200);
 	}
