@@ -17,6 +17,7 @@ PUBLIC void kernel_main(){
 	proc_table[0].ticks = proc_table[0].priority = 150;
 	proc_table[1].ticks = proc_table[1].priority = 50;
 	proc_table[2].ticks = proc_table[2].priority = 30;
+	proc_table[3].ticks = proc_table[3].priority = 300;
 
 	for(int i = 0; i < NR_TASKS; ++i){
 		strcpy(p_proc->p_name, p_task->name);
@@ -49,13 +50,8 @@ PUBLIC void kernel_main(){
 	k_reenter = 0;
 	ticks = 0;
 
-	out_byte(TIMER_MODE, RATE_GENERATOR);
-        out_byte(TIMER0, (u8) (TIMER_FREQ/HZ) );
-        out_byte(TIMER0, (u8) ((TIMER_FREQ/HZ) >> 8));
-
-
-	put_irq_handler(CLOCK_IRQ, clock_handler);
-	put_irq_handler(KEYBOARD_IRQ, keyboard_handler);
+	init_clock();
+	init_keyboard();
 	
 	/*disp_pos = 0;
 	for (int i = 0; i < 80*25; i++) {

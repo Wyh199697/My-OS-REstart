@@ -12,6 +12,8 @@ global in_byte
 global disp_color_str
 global  enable_irq
 global  disable_irq
+global disable_int
+global enable_int
 ;========================
 disp_str:
 	push ebp
@@ -165,3 +167,11 @@ enable_8:
         out     INT_S_CTLMASK, al       ; clear bit at slave 8259
         popf
         ret
+
+disable_int:
+	cli
+	ret
+
+enable_int:
+	sti
+	ret
