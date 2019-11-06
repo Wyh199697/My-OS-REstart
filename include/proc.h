@@ -26,11 +26,10 @@ typedef struct s_stackframe {
 
 typedef struct s_proc {
 	STACK_FRAME regs;          /* process registers saved in stack frame */
-
-	int ticks;
-	int priority;
 	u16 ldt_sel;               /* gdt selector giving ldt base and limit */
 	DESCRIPTOR ldts[LDT_SIZE]; /* local descriptors for code and data */
+	int ticks;
+	int priority;
 	u32 pid;                   /* process id passed in from MM */
 	char p_name[16];           /* name of the process */
 }PROCESS;

@@ -23,3 +23,6 @@ PUBLIC void clock_handler(int irq);
 PUBLIC int get_ticks();
 PUBLIC void sys_call();
 PUBLIC int sys_get_ticks();
+PUBLIC void schedule();
+PUBLIC void milli_delay(int milli_sec);
+PUBLIC void disp_str(char*info);

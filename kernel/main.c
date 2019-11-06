@@ -14,9 +14,9 @@ PUBLIC void kernel_main(){
 	char *p_task_stack = task_stack + STACK_SIZE_TOTAL;
 	u16 selector_ldt = SELECTOR_LDT_FIRST;
 	
-	proc_table[0].ticks = proc_table[0].priority = 300;
-	proc_table[1].ticks = proc_table[1].priority = 900;
-	proc_table[2].ticks = proc_table[2].priority = 1500;
+	proc_table[0].ticks = proc_table[0].priority = 150;
+	proc_table[1].ticks = proc_table[1].priority = 50;
+	proc_table[2].ticks = proc_table[2].priority = 30;
 
 	for(int i = 0; i < NR_TASKS; ++i){
 		strcpy(p_proc->p_name, p_task->name);
@@ -55,41 +55,53 @@ PUBLIC void kernel_main(){
 
 
 	put_irq_handler(CLOCK_IRQ, clock_handler);
+	
+	disp_pos = 0;
+	for (int i = 0; i < 80*25; i++) {
+		disp_str(" ");
+	}
+	disp_pos = 0;
 	restart();
 	
 
 	while(1);
 }
 
-void TestA(){
-//	int i = 0;
-	while(1){
-	//	disp_int(get_ticks());
-		disp_str("A");
-	//	disp_int(i++);
-		disp_str(".");
-		milli_delay(300);
+/*======================================================================*
+                               TestA
+ *======================================================================*/
+void TestA()
+{
+	int i = 0;
+	while (1) {
+		disp_color_str("A.", BRIGHT | MAKE_COLOR(BLACK, RED));
+		//disp_int(get_ticks());
+		milli_delay(200);
 	}
 }
 
+/*======================================================================*
+                               TestB
+ *======================================================================*/
 void TestB()
 {
-//	int i = 0x1000;
+	int i = 0x1000;
 	while(1){
-		disp_str("B");
-//		disp_int(i++);
-		disp_str(".");
-		milli_delay(900);
+		disp_color_str("B.", BRIGHT | MAKE_COLOR(BLACK, RED));
+		//disp_int(get_ticks());
+		milli_delay(200);
 	}
 }
 
+/*======================================================================*
+                               TestB
+ *======================================================================*/
 void TestC()
 {
-//	int i = 0x2000;
+	int i = 0x2000;
 	while(1){
-		disp_str("C");
-//		disp_int(i++);
-		disp_str(".");
-		milli_delay(1500);
+		disp_color_str("C.", BRIGHT | MAKE_COLOR(BLACK, RED));
+		//disp_int(get_ticks());
+		milli_delay(200);
 	}
 }

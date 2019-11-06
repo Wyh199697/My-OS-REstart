@@ -39,6 +39,25 @@
 /* system call */
 #define NR_SYS_CALL     1
 
+/* Boolean */
+#define	TRUE	1
+#define	FALSE	0
+
+/* Color */
+/*
+ * e.g. MAKE_COLOR(BLUE, RED)
+ *      MAKE_COLOR(BLACK, RED) | BRIGHT
+ *      MAKE_COLOR(BLACK, RED) | BRIGHT | FLASH
+ */
+#define BLACK   0x0     /* 0000 */
+#define WHITE   0x7     /* 0111 */
+#define RED     0x4     /* 0100 */
+#define GREEN   0x2     /* 0010 */
+#define BLUE    0x1     /* 0001 */
+#define FLASH   0x80    /* 1000 0000 */
+#define BRIGHT  0x08    /* 0000 1000 */
+#define MAKE_COLOR(x,y) (x | y) /* MAKE_COLOR(Background,Foreground) */
+
 /* 8253/8254 PIT (Programmable Interval Timer) */
 #define TIMER0         0x40 /* I/O port for timer channel 0 */
 #define TIMER_MODE     0x43 /* I/O port for timer mode control */
