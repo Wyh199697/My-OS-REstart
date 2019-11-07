@@ -14,9 +14,9 @@ PUBLIC void kernel_main(){
 	char *p_task_stack = task_stack + STACK_SIZE_TOTAL;
 	u16 selector_ldt = SELECTOR_LDT_FIRST;
 	
-	proc_table[0].ticks = proc_table[0].priority = 150;
-	proc_table[1].ticks = proc_table[1].priority = 50;
-	proc_table[2].ticks = proc_table[2].priority = 30;
+	//proc_table[0].ticks = proc_table[0].priority = 150;
+	//proc_table[1].ticks = proc_table[1].priority = 50;
+	//proc_table[2].ticks = proc_table[2].priority = 30;
 	proc_table[3].ticks = proc_table[3].priority = 300;
 
 	for(int i = 0; i < NR_TASKS; ++i){
