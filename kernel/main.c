@@ -18,6 +18,7 @@ PUBLIC void kernel_main(){
 	//proc_table[1].ticks = proc_table[1].priority = 50;
 	//proc_table[2].ticks = proc_table[2].priority = 30;
 	proc_table[3].ticks = proc_table[3].priority = 300;
+	//proc_table[4].ticks = proc_table[4].priority = 300;
 
 	for(int i = 0; i < NR_TASKS; ++i){
 		strcpy(p_proc->p_name, p_task->name);

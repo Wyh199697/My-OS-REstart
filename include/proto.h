@@ -33,3 +33,4 @@ PUBLIC void init_clock();
 PUBLIC void disable_int();
 PUBLIC void enable_int();
 PUBLIC void task_tty();
+PUBLIC void in_process();

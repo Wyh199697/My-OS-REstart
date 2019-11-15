@@ -44,7 +44,8 @@ PUBLIC void init_keyboard(){
 	put_irq_handler(KEYBOARD_IRQ, keyboard_handler);
 }
 
-PUBLIC void keyboard_read(){
+PUBLIC void keyboard_read()
+{
 	u8	scan_code;
 	char	output[2];
 	int	make;	/* 1: make;  0: break. */
@@ -122,39 +123,35 @@ PUBLIC void keyboard_read(){
 			switch(key) {
 			case SHIFT_L:
 				shift_l = make;
-				key = 0;
 				break;
 			case SHIFT_R:
 				shift_r = make;
-				key = 0;
 				break;
 			case CTRL_L:
 				ctrl_l = make;
-				key = 0;
 				break;
 			case CTRL_R:
 				ctrl_r = make;
-				key = 0;
 				break;
 			case ALT_L:
 				alt_l = make;
-				key = 0;
 				break;
 			case ALT_R:
 				alt_l = make;
-				key = 0;
 				break;
 			default:
-				if (!make) {	/* 如果是 Break Code */
-					key = 0;/* 忽略之 */
-				}
 				break;
 			}
 
-			/* 如果 Key 不为0说明是可打印字符，否则不做处理 */
-			if (key) {
-				output[0] = key;
-				disp_str(output);
+			if (make) { /* 忽略 Break Code */
+				key |= shift_l	? FLAG_SHIFT_L	: 0;
+				key |= shift_r	? FLAG_SHIFT_R	: 0;
+				key |= ctrl_l	? FLAG_CTRL_L	: 0;
+				key |= ctrl_r	? FLAG_CTRL_R	: 0;
+				key |= alt_l	? FLAG_ALT_L	: 0;
+				key |= alt_r	? FLAG_ALT_R	: 0;
+			
+				in_process(key);
 			}
 		}
 	}
