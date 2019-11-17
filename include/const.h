@@ -39,6 +39,9 @@
 /* system call */
 #define NR_SYS_CALL     1
 
+/* console */
+#define NR_CONSOLES		3
+
 /* Boolean */
 #define	TRUE	1
 #define	FALSE	0

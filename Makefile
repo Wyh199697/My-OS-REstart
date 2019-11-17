@@ -13,7 +13,7 @@ LDFLAGS = -m elf_i386 -s -Ttext $(ENTRYPOINT) -e $(ENTRYOFFSET)
 
 ORANGESBOOT = boot/boot.bin boot/loader.bin
 ORANGESKERNEL = kernel/kernel.bin
-OBJS = kernel/kernel.o kernel/start.o lib/string.o lib/kliba.o kernel/i8259.o kernel/global.o lib/klib.o kernel/protect.o kernel/main.o kernel/clock.o kernel/proc.o kernel/syscall.o kernel/keyboard.o kernel/tty.o
+OBJS = kernel/kernel.o kernel/start.o lib/string.o lib/kliba.o kernel/i8259.o kernel/global.o lib/klib.o kernel/protect.o kernel/main.o kernel/clock.o kernel/proc.o kernel/syscall.o kernel/keyboard.o kernel/tty.o kernel/console.o
 DASMOUTPUT = kernel.bin.asm
 
 
@@ -64,7 +64,7 @@ lib/string.o : lib/string.asm
 lib/kliba.o : lib/kliba.asm include/sconst.inc
 	$(ASM) $(ASMKFLAGS) -o $@ $<
 
-kernel/start.o : kernel/start.c include/type.h include/const.h include/protect.h include/string.h include/proto.h include/global.h include/proc.h
+kernel/start.o : kernel/start.c include/type.h include/const.h include/protect.h include/string.h include/proto.h include/global.h include/proc.h include/tty.h include/console.h
 	$(CC) $(CFLAGS) -o $@ $<
 
 kernel/protect.o: kernel/protect.c /usr/include/stdc-predef.h include/type.h \
@@ -104,6 +104,11 @@ keyboard.o: kernel/keyboard.c include/type.h \
 	$(CC) $(CFLAGS) -o $@ $<
 
 tty.o: kernel/tty.c include/type.h \
+ include/const.h include/protect.h include/proto.h include/string.h \
+ include/global.h include/proc.h include/keyboard.h include/keymap.h
+	$(CC) $(CFLAGS) -o $@ $<
+
+console.o: kernel/console.c include/type.h \
  include/const.h include/protect.h include/proto.h include/string.h \
  include/global.h include/proc.h include/keyboard.h include/keymap.h
 	$(CC) $(CFLAGS) -o $@ $<
