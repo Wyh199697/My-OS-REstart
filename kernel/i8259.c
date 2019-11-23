@@ -11,9 +11,9 @@
 #include "protect.h"
 #include "console.h"
 #include "tty.h"
+#include "proc.h"
 #include "proto.h"
 #include "string.h"
-#include "proc.h"
 #include "global.h"
 
 

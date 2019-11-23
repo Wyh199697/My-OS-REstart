@@ -149,13 +149,13 @@ PUBLIC void init_prot()
 
 		memset(&tss, 0, sizeof(tss));
 		tss.ss0		= SELECTOR_KERNEL_DS;
-		init_descriptor(&gdt[INDEX_TSS], 
+		init_descriptor(&gdt[INDEX_TSS],
 				vir2phys(seg2phys(SELECTOR_KERNEL_DS), &tss),
 					sizeof(tss) - 1, DA_386TSS);//elf文件会根据程序入口载入地址，自然会带org，&tss会有文件内偏移加程序入口，就是对于整个段的偏移，因为这个段的基地址是0
 		tss.iobase = sizeof(tss);
-		for(int i = 0; i < NR_TASKS; ++i){
-		init_descriptor(&gdt[INDEX_LDT_FIRST + i], 
-				vir2phys(seg2phys(SELECTOR_KERNEL_DS), proc_table[i].ldts), 
+		for(int i = 0; i < NR_TASKS+NR_PROCS; ++i){
+		init_descriptor(&gdt[INDEX_LDT_FIRST + i],
+				vir2phys(seg2phys(SELECTOR_KERNEL_DS), proc_table[i].ldts),
 				LDT_SIZE * sizeof(DESCRIPTOR) -1, DA_LDT);
 		}
 }

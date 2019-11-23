@@ -116,6 +116,8 @@ PUBLIC void scroll_screen(CONSOLE* p_con, int direction){
 
 PRIVATE void flush(CONSOLE* p_con)
 {
-        set_cursor(p_con->cursor);
-        set_video_start_addr(p_con->current_start_addr);
+        if (is_current_console(p_con)) {
+		set_cursor(p_con->cursor);
+		set_video_start_addr(p_con->current_start_addr);
+	}
 }

@@ -13,7 +13,7 @@ LDFLAGS = -m elf_i386 -s -Ttext $(ENTRYPOINT) -e $(ENTRYOFFSET)
 
 ORANGESBOOT = boot/boot.bin boot/loader.bin
 ORANGESKERNEL = kernel/kernel.bin
-OBJS = kernel/kernel.o kernel/start.o lib/string.o lib/kliba.o kernel/i8259.o kernel/global.o lib/klib.o kernel/protect.o kernel/main.o kernel/clock.o kernel/proc.o kernel/syscall.o kernel/keyboard.o kernel/tty.o kernel/console.o
+OBJS = kernel/kernel.o kernel/start.o lib/string.o lib/kliba.o kernel/i8259.o kernel/global.o lib/klib.o kernel/protect.o kernel/main.o kernel/clock.o kernel/proc.o kernel/syscall.o kernel/keyboard.o kernel/tty.o kernel/console.o kernel/printf.o kernel/vsprintf.o
 DASMOUTPUT = kernel.bin.asm
 
 
@@ -109,6 +109,16 @@ tty.o: kernel/tty.c include/type.h \
 	$(CC) $(CFLAGS) -o $@ $<
 
 console.o: kernel/console.c include/type.h \
+ include/const.h include/protect.h include/proto.h include/string.h \
+ include/global.h include/proc.h include/keyboard.h include/keymap.h
+	$(CC) $(CFLAGS) -o $@ $<
+
+printf.o: kernel/printf.c include/type.h \
+ include/const.h include/protect.h include/proto.h include/string.h \
+ include/global.h include/proc.h include/keyboard.h include/keymap.h
+	$(CC) $(CFLAGS) -o $@ $<
+
+vsprintf.o: kernel/vsprintf.c include/type.h \
  include/const.h include/protect.h include/proto.h include/string.h \
  include/global.h include/proc.h include/keyboard.h include/keymap.h
 	$(CC) $(CFLAGS) -o $@ $<

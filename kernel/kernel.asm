@@ -356,8 +356,12 @@ restart_reenter:
 
 sys_call:
 	call save
+	push dword [p_proc_ready]
 	sti			;允许硬件中断
+	push ecx
+	push ebx
 	call [sys_call_table+4*eax]
+	add esp, 4 * 3
 	mov [esi+EAXREG-P_STACKBASE],eax	;保存eax的值
 	cli
 	ret			;return之后上面的代码会执行iretd
