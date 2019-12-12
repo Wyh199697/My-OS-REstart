@@ -71,8 +71,8 @@ PUBLIC void kernel_main(){
 	k_reenter = 0;
 	ticks = 0;
 
-	init_clock();
-	init_keyboard();
+	init_clock();	//可以注释掉
+	init_keyboard();	//可以注释掉
 
 	/*disp_pos = 0;
 	for (int i = 0; i < 80*25; i++) {

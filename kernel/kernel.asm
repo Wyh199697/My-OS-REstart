@@ -321,9 +321,13 @@ save:
 	push es
 	push fs
 	push gs
+
+	mov esi,edx
 	mov dx,ss
 	mov ds,dx
 	mov es,dx
+	mov edx,esi
+
 	mov esi,esp
 
 	inc dword[k_reenter]
@@ -358,10 +362,11 @@ sys_call:
 	call save
 	push dword [p_proc_ready]
 	sti			;允许硬件中断
+	push edx
 	push ecx
 	push ebx
 	call [sys_call_table+4*eax]
-	add esp, 4 * 3
+	add esp, 4 * 4
 	mov [esi+EAXREG-P_STACKBASE],eax	;保存eax的值
 	cli
 	ret			;return之后上面的代码会执行iretd

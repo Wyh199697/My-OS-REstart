@@ -18,4 +18,4 @@ PUBLIC  TASK    user_proc_table[NR_PROCS] = {
 	{TestB, STACK_SIZE_TESTB, "TestB"},
 	{TestC, STACK_SIZE_TESTC, "TestC"}};
 
-system_call sys_call_table[NR_SYS_CALL] = {sys_get_ticks, sys_write};
+system_call sys_call_table[NR_SYS_CALL] = {sys_get_ticks, sys_write, sys_sendrec};

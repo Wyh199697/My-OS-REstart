@@ -42,3 +42,32 @@ PUBLIC void schedule(){
 		}
 	}
 }
+
+PUBLIC int sys_sendrec(int function, int src_dest, MESSAGE* m,  struct proc* p){
+	assert(k_reenter == 0);/*make sure we are not in ring0??*/
+	assert((src_dest >= 0 && src_dest < NR_TASKS + NR_PROCS) || 
+			src_dest == ANY || 
+			src_dest == INTERRUPT);
+
+	int ret = 0;
+	int caller = proc2pid(p);
+	MASSAGE* mla = (MASSAGE*)va2la(caller, m);
+	mla->source = caller;
+
+	assert(mla->source != src_dest);
+	if(function == SEND){
+		ret = msg_send(p, sec_dest, m);
+		if(ret != 0){
+			return ret;
+		}else if(function == RECEIVE){
+			ret = msgreceive(p, src_dest, m);
+			if(ret != 0){
+				return ret;
+			}
+		}else{
+			panic("{sys_sendrec} invalid function: "
+					"%d (SEND:%d, RECEIVE:%d).", function, SEND, RECEIVE);
+		}
+	}
+	return 0;
+}

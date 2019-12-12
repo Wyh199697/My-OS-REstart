@@ -16,7 +16,7 @@ EXTERN int k_reenter;
 extern TASK task_table[];
 extern TASK user_proc_table[];
 EXTERN irq_handler irq_table[NR_IRQ];
-extern system_call sys_call_table[NR_SYS_CALL];
+extern system_call sys_call_table[NR_SYS_CALL]; //删掉试试
 EXTERN int ticks;
 EXTERN TTY tty_table[NR_CONSOLES];
 EXTERN CONSOLE console_table[NR_CONSOLES];

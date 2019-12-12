@@ -37,7 +37,7 @@
 #define	AT_WINI_IRQ	14	/* at winchester */
 
 /* system call */
-#define NR_SYS_CALL     2
+#define NR_SYS_CALL     3
 
 /* console */
 #define NR_CONSOLES		3
