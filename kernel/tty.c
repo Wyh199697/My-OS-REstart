@@ -133,3 +133,25 @@ PUBLIC int sys_write(char* buf, int len, PROCESS* p_proc){
 	tty_write(&tty_table[p_proc->nr_tty], buf, len);
 	return 0;
 }
+
+PUBLIC int sys_printx(int _unused1, int _unused2, char* s, struct proc* p_proc){
+	const char* p;
+	char ch;
+	char reenter_err[] = "? k_reenter is incorrect for unknown reason";
+	reenter_err[0] = MAG_CH_PANIC;
+	if(k_reenter == 0){ //用户态调用系统调用会使k_reenter=0
+		p = va2la(proc2pid(p_proc), s);
+	}else if(k_reenter > 0){ //内核态调用系统调用会使k_reenter>0
+		p = s;
+	}else{
+		p = reenter_err;
+	}
+	if((*p == MAG_CH_PANIC) || (*p == MAG_CH_ASSERT && p_proc_ready < &proc_table[NR_TASKS])){
+		disable_int();
+		char* v = (char*)V_MEM_BASE;
+		const char * q = p + 1;
+		while(v < (char*)(V_MEM_BASE + V_MEM_SIZE)){
+			
+		}
+	}
+}

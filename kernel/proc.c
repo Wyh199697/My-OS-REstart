@@ -44,7 +44,7 @@ PUBLIC void schedule(){
 }
 
 PUBLIC int sys_sendrec(int function, int src_dest, MESSAGE* m,  struct proc* p){
-	assert(k_reenter == 0);/*make sure we are not in ring0??*/
+	assert(k_reenter == 0);/*make sure we are not in ring0??is k_reenter supposed to be -1*/
 	assert((src_dest >= 0 && src_dest < NR_TASKS + NR_PROCS) || 
 			src_dest == ANY || 
 			src_dest == INTERRUPT);

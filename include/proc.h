@@ -2,7 +2,7 @@
 #define _ORANGES_PROC_H_
 
 
-typedef struct s_stackframe {
+typedef struct stackframe {
 	u32	gs;		/* \                                    */
 	u32	fs;		/* |                                    */
 	u32	es;		/* |                                    */
@@ -24,7 +24,7 @@ typedef struct s_stackframe {
 }STACK_FRAME;
 
 
-typedef struct s_proc {
+typedef struct proc {
 	STACK_FRAME regs;          /* process registers saved in stack frame */
 	u16 ldt_sel;               /* gdt selector giving ldt base and limit */
 	DESCRIPTOR ldts[LDT_SIZE]; /* local descriptors for code and data */
@@ -35,7 +35,7 @@ typedef struct s_proc {
 	int nr_tty;
 }PROCESS;
 
-typedef struct s_tack{
+typedef struct tack{
 	task_f initial_eip;
 	int stacksize;
 	char name[32];
@@ -45,6 +45,8 @@ typedef struct s_tack{
 /* Number of tasks */
 #define NR_TASKS	1
 #define NR_PROCS	3
+
+#define proc2pid(x) (x - proc_table)
 
 /* stacks of tasks */
 #define STACK_SIZE_TESTA	0x8000

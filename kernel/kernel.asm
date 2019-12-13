@@ -362,9 +362,9 @@ sys_call:
 	call save
 	push dword [p_proc_ready]
 	sti			;允许硬件中断
-	push edx
-	push ecx
-	push ebx
+	push edx ;i
+	push ecx ;buf
+	push ebx 
 	call [sys_call_table+4*eax]
 	add esp, 4 * 4
 	mov [esi+EAXREG-P_STACKBASE],eax	;保存eax的值

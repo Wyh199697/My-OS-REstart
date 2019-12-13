@@ -18,8 +18,8 @@ get_ticks:
 
 write:
 	mov eax,_NR_write
-	mov ebx,[esp+4]
-	mov ecx,[esp+8]
+	mov ecx,[esp+4] ;buf
+	mov edx,[esp+8] ;i
 	int INT_VECTOR_SYS_CALL
 	ret
 
