@@ -12,6 +12,7 @@ int printf(const char* fmt, ...){//因为用户进程工作在用户态，没有
 	char buf[256];
 	va_list arg = (va_list)((char*)(&fmt)+4);
 	i = vsprintf(buf, fmt, arg);
-	write(buf, i);
+	buf[i] = 0;
+	printx(buf);
 	return i;
 }

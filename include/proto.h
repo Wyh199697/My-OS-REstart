@@ -19,7 +19,7 @@ PUBLIC void enable_irq(int irq);
 PUBLIC void put_irq_handler(int irq, irq_handler handler);
 PUBLIC void spurious_irq(int irq);
 PUBLIC void clock_handler(int irq);
-PUBLIC int get_ticks();
+//PUBLIC int get_ticks();
 PUBLIC void sys_call();
 PUBLIC int sys_get_ticks();
 PUBLIC void schedule();
@@ -38,8 +38,16 @@ PUBLIC void out_char(CONSOLE *p_con, char ch);
 PUBLIC void init_screen(TTY* p_tty);
 PUBLIC void scroll_screen(CONSOLE* p_con, int direction);
 PUBLIC void select_console(int nr_console);
-PUBLIC void write(char* buf, int len);
-PUBLIC int sys_write(char* buf, int len, PROCESS* p_proc);
+/*PUBLIC void write(char* buf, int len);
+PUBLIC int sys_write(char* buf, int len, PROCESS* p_proc);*/
 PUBLIC int printf(const char* fmt, ...);
+#define	printl	printf
+PUBLIC	int	sys_printx(int _unused1, int _unused2, char* s, struct proc * p_proc);
+PUBLIC	int	sendrec(int function, int src_dest, MESSAGE* p_msg);
+PUBLIC int sys_sendrec(int function, int src_dest, MESSAGE* m,  struct proc* p);
+PUBLIC	int	printx(char* str);
 PUBLIC int vsprintf(char* buf, const char* fmt, va_list args);
 PUBLIC char* itoa(char * str, int num);
+PUBLIC void* va2la(int pid, void* va);
+PUBLIC int ldt_seg_linear(struct proc* p, int idx);
+PUBLIC void panic(const char *fmt, ...);

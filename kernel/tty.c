@@ -18,6 +18,7 @@ PRIVATE void tty_do_write(TTY*p_tty);
 PRIVATE void put_key(TTY* p_tty, u32 key);
 
 PUBLIC void task_tty(){
+	//assert(0);
 	TTY* p_tty;
 	init_keyboard();
 
@@ -129,16 +130,12 @@ PUBLIC void tty_write(TTY* p_tty, char* buf, int len){
 	}
 }
 
-PUBLIC int sys_write(char* buf, int len, PROCESS* p_proc){
-	tty_write(&tty_table[p_proc->nr_tty], buf, len);
-	return 0;
-}
-
 PUBLIC int sys_printx(int _unused1, int _unused2, char* s, struct proc* p_proc){
 	const char* p;
 	char ch;
 	char reenter_err[] = "? k_reenter is incorrect for unknown reason";
 	reenter_err[0] = MAG_CH_PANIC;
+	//没明白这样处理的意义内核态和用户态为什么字符串地址不同？
 	if(k_reenter == 0){ //用户态调用系统调用会使k_reenter=0
 		p = va2la(proc2pid(p_proc), s);
 	}else if(k_reenter > 0){ //内核态调用系统调用会使k_reenter>0
@@ -151,7 +148,23 @@ PUBLIC int sys_printx(int _unused1, int _unused2, char* s, struct proc* p_proc){
 		char* v = (char*)V_MEM_BASE;
 		const char * q = p + 1;
 		while(v < (char*)(V_MEM_BASE + V_MEM_SIZE)){
-			
+			*v++ = *q++;
+			*v++ = RED_CHAR;
+			if(!*q){
+				while(((int)v - V_MEM_BASE) % (SCREEN_WIDTH * 16)){
+					v++;
+					*v++ = GRAY_CHAR;
+				}
+				q = p + 1;
+			}
 		}
+		__asm__ __volatile__("hlt");
 	}
+	while((ch = *p++) != 0){
+		if(ch == MAG_CH_PANIC || ch == MAG_CH_ASSERT){
+			continue;
+		}
+		out_char(tty_table[p_proc->nr_tty].p_console, ch);
+	}
+	return 0;
 }

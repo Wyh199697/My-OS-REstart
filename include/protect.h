@@ -1,7 +1,7 @@
 #ifndef _ORANGES_PROTECT_H_
 #define _ORANGES_PROTECT_H_
  
-typedef struct s_descriptor{
+typedef struct descriptor{
 	u16 limit_low;
 	u16 base_low;
 	u8 base_mid;
@@ -10,7 +10,7 @@ typedef struct s_descriptor{
 	u8 base_high;
 }DESCRIPTOR;
 
-typedef struct s_gate{
+typedef struct gate{
 	u16	offset_low;
 	u16 selector;
 	u8	dcount;
@@ -18,7 +18,7 @@ typedef struct s_gate{
 	u16	offset_high;
 }GATE;
 
-typedef struct s_tss {
+typedef struct tss {
 	u32	backlink;
 	u32	esp0;	/* stack pointer to use during interrupt */
 	u32	ss0;	/*   "   segment  "  "    "        "     */
@@ -70,6 +70,9 @@ typedef struct s_tss {
 #define	SELECTOR_KERNEL_GS	SELECTOR_VIDEO
 
 #define LDT_SIZE		2
+/* descriptor indices in LDT */
+#define INDEX_LDT_C             0
+#define INDEX_LDT_RW            1
 
 /* 选择子类型值说明 */
 /* 其中, SA_ : Selector Attribute */

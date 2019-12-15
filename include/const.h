@@ -1,14 +1,21 @@
 #ifndef _ORANGES_CONST_H_
 #define _ORANGES_CONST_H_
 
+/* the assert macro */
 #define ASSERT
 #ifdef ASSERT
-void assertion_failure(char* exp, char* file, char* base_file, int line);
-#define assert(exp) if(exp);\
-		else assertion_failure(#exp, __FILE__, __BASE_FILE__, __LINE__)
+void assertion_failure(char *exp, char *file, char *base_file, int line);
+#define assert(exp)  if (exp) ; \
+        else assertion_failure(#exp, __FILE__, __BASE_FILE__, __LINE__)
 #else
 #define assert(exp)
 #endif
+
+/* Process */
+#define SENDING   0x02	/* set when proc trying to send */
+#define RECEIVING 0x04	/* set when proc trying to recv */
+
+#define	STR_DEFAULT_LEN	1024
 
 #define PUBLIC
 #define PRIVATE static
@@ -17,6 +24,17 @@ void assertion_failure(char* exp, char* file, char* base_file, int line);
 
 #define GDT_SIZE 128
 #define IDT_SIZE 256
+
+#define INVALID_DRIVER	-20
+#define INTERRUPT	-10
+#define TASK_TTY	0
+#define TASK_SYS	1
+/* #define TASK_WINCH	2 */
+/* #define TASK_FS	3 */
+/* #define TASK_MM	4 */
+#define ANY		(NR_TASKS + NR_PROCS + 10)
+#define NO_TASK		(NR_TASKS + NR_PROCS + 20)
+
 
 #define PRIVILEGE_KRNL 0
 #define PRIVILEGE_TASK 1
@@ -46,7 +64,7 @@ void assertion_failure(char* exp, char* file, char* base_file, int line);
 #define	AT_WINI_IRQ	14	/* at winchester */
 
 /* system call */
-#define NR_SYS_CALL     3
+#define NR_SYS_CALL     2
 
 /* ipc */
 #define SEND		1
@@ -56,6 +74,21 @@ void assertion_failure(char* exp, char* file, char* base_file, int line);
 /* magic chars used by `printx' */
 #define MAG_CH_PANIC	'\002'
 #define MAG_CH_ASSERT	'\003'
+
+/**
+ * @enum msgtype
+ * @brief MESSAGE types
+ */
+enum msgtype {
+	/* 
+	 * when hard interrupt occurs, a msg (with type==HARD_INT) will
+	 * be sent to some tasks
+	 */
+	HARD_INT = 1,
+
+	/* SYS task */
+	GET_TICKS,
+};
 
 /* console */
 #define NR_CONSOLES		3

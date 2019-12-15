@@ -90,12 +90,14 @@ PUBLIC void kernel_main(){
  *======================================================================*/
 void TestA()
 {
+assert(0);
 	int i = 0;
 	while (1) {
 		printf("%x",i++);
+
 		//disp_color_str("A.", BRIGHT | MAKE_COLOR(BLACK, RED));
 		//disp_int(get_ticks());
-		milli_delay(200);
+		//milli_delay(200);
 	}
 }
 
@@ -106,10 +108,10 @@ void TestB()
 {
 	int i = 0x1000;
 	while(1){
-		printf("hello");
+		//printf("hello");
 		//disp_color_str("B.", BRIGHT | MAKE_COLOR(BLACK, RED));
 		//disp_int(get_ticks());
-		milli_delay(200);
+		//milli_delay(200);
 	}
 }
 
@@ -122,6 +124,19 @@ void TestC()
 	while(1){
 		//disp_color_str("C.", BRIGHT | MAKE_COLOR(BLACK, RED));
 		//disp_int(get_ticks());
-		milli_delay(200);
+		//milli_delay(200);
 	}
+}
+
+PUBLIC void panic(const char *fmt, ...){
+	int i;
+	char buf[256];
+	va_list arg = (va_list)((char*)&fmt + 4);
+
+	i = vsprintf(buf, fmt, arg);
+
+	printl("%c !!panic!! %s", MAG_CH_PANIC, buf);
+
+	__asm__ __volatile__("ud2");
+	
 }

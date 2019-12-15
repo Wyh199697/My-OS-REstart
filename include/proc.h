@@ -32,10 +32,17 @@ typedef struct proc {
 	int priority;
 	u32 pid;                   /* process id passed in from MM */
 	char p_name[16];           /* name of the process */
+	int p_flags;
+	MESSAGE* p_msg;
+	int p_recvfrom;
+	int p_sendto;
+	int has_int_msg;
+	PROCESS* q_sending;
+	PROCESS* next_sending;
 	int nr_tty;
 }PROCESS;
 
-typedef struct tack{
+typedef struct task{
 	task_f initial_eip;
 	int stacksize;
 	char name[32];
@@ -45,6 +52,8 @@ typedef struct tack{
 /* Number of tasks */
 #define NR_TASKS	1
 #define NR_PROCS	3
+#define FIRST_PROC	proc_table[0]
+#define LAST_PROC	proc_table[NR_TASKS + NR_PROCS - 1]
 
 #define proc2pid(x) (x - proc_table)
 
