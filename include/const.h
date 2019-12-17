@@ -35,6 +35,8 @@ void assertion_failure(char *exp, char *file, char *base_file, int line);
 #define ANY		(NR_TASKS + NR_PROCS + 10)
 #define NO_TASK		(NR_TASKS + NR_PROCS + 20)
 
+#define	RETVAL		u.m3.m3i1
+
 
 #define PRIVILEGE_KRNL 0
 #define PRIVILEGE_TASK 1

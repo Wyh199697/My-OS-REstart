@@ -11,7 +11,7 @@
 PRIVATE int  msg_send(struct proc* current, int dest, MESSAGE* m);
 PRIVATE int  msg_receive(struct proc* current, int src, MESSAGE* m);
 PRIVATE void block(struct proc* p);
-PRIVATE void unblock(PROBESS* p);
+PRIVATE void unblock(PROCESS* p);
 PRIVATE int deadlock(int src, int dest);
 
 PRIVATE int  msg_send(struct proc* current, int dest, MESSAGE* m){
@@ -21,9 +21,9 @@ PRIVATE int  msg_send(struct proc* current, int dest, MESSAGE* m){
 	if(deadlock(proc2pid(sender),dest)){
 		panic(">>DEADLOCK<< %s->%s", sender->p_name, p_dest->p_name);
 	}
-	if((p_dest->p_flags & REICEIVING) && 
+	if((p_dest->p_flags & RECEIVING) && 
 		(p_dest->p_recvfrom == proc2pid(sender) ||
-		 p_dest->p_recfrom == ANY)){//wtf is ANY?
+		 p_dest->p_recvfrom == ANY)){//wtf is ANY?
 		assert(p_dest->p_msg);
 		assert(m);
 		phys_copy(va2la(dest, p_dest->p_msg),
@@ -71,7 +71,7 @@ PRIVATE int  msg_send(struct proc* current, int dest, MESSAGE* m){
 }
 
 PRIVATE int  msg_receive(struct proc* current, int src, MESSAGE* m){
-	PROCESS p_who_wanna_recv = current;
+	PROCESS* p_who_wanna_recv = current;
 	PROCESS* p_from = 0;
 	PROCESS* prev = 0;
 	int copyok = 0;
@@ -132,7 +132,7 @@ PRIVATE int  msg_receive(struct proc* current, int src, MESSAGE* m){
 			assert(p_who_wanna_recv->p_recvfrom == NO_TASK);
 			assert(p_who_wanna_recv->p_sendto == NO_TASK);
 			assert(p_who_wanna_recv->q_sending != 0);
-			assert(p_from->flags == SENDING);
+			assert(p_from->p_flags == SENDING);
 			assert(p_from->p_msg != 0);
 			assert(p_from->p_recvfrom == NO_TASK);
 			assert(p_from->p_sendto == proc2pid(p_who_wanna_recv));
@@ -151,7 +151,7 @@ PRIVATE int  msg_receive(struct proc* current, int src, MESSAGE* m){
 		assert(m);
 		assert(p_from->p_msg);
 
-		phy_copy(va2la(proc2pid(p_who_wanna_recv), m),
+		phys_copy(va2la(proc2pid(p_who_wanna_recv), m),
 				 va2la(proc2pid(p_from), p_from->p_msg), sizeof(MESSAGE));
 		p_from->p_msg = 0;
 		p_from->p_msg = 0;
@@ -160,8 +160,8 @@ PRIVATE int  msg_receive(struct proc* current, int src, MESSAGE* m){
 
 		unblock(p_from);
 	}else{
-		p_who_wanna_recv->p_flags->p_flags |= RECEIVING;
-		p_who_wanna_recv->p_p_msg = m;
+		p_who_wanna_recv->p_flags |= RECEIVING;
+		p_who_wanna_recv->p_msg = m;
 		p_who_wanna_recv->p_recvfrom = src;
 		block(p_who_wanna_recv);
 
@@ -169,9 +169,9 @@ PRIVATE int  msg_receive(struct proc* current, int src, MESSAGE* m){
 		assert(p_who_wanna_recv->p_msg != 0);
 		assert(p_who_wanna_recv->p_recvfrom != NO_TASK);
 		assert(p_who_wanna_recv->p_sendto == NO_TASK);
-		assert(p_who_wanna_recv->had_int_msg == 0);
+		assert(p_who_wanna_recv->has_int_msg == 0);
 	}
-
+	return 0;
 }
 
 PRIVATE void block(PROCESS* p){
@@ -179,7 +179,7 @@ PRIVATE void block(PROCESS* p){
 	schedule();
 }
 
-PRIVATE unblock(PROCESS* p){
+PRIVATE void unblock(PROCESS* p){
 	assert(p->p_flags == 0);
 }
 
@@ -198,7 +198,7 @@ PRIVATE int deadlock(int src, int dest){ //wtf?
 				printf("=_=");
 				return 1;
 			}
-			p = proc_table + p->sendto;
+			p = proc_table + p->p_sendto;
 		}else{
 			break;
 		}
@@ -229,6 +229,29 @@ PUBLIC void* va2la(int pid, void* va)
 
 PUBLIC void reset_msg(MESSAGE*  p){
 	memset(p, 0, sizeof(MESSAGE));
+}
+
+PUBLIC int send_recv(int function, int src_dest, MESSAGE* msg){
+	int ret = 0;
+	if(function == RECEIVE){
+		memset(msg, 0, sizeof(MESSAGE));
+	}
+	switch(function){
+		case BOTH:
+			ret = sendrec(SEND, src_dest, msg);
+			if(ret == 0){
+				ret = sendrec(RECEIVE, src_dest, msg);
+			}
+			break;
+		case SEND:
+		case RECEIVE:
+			ret = sendrec(function, src_dest, msg);
+		default:
+			assert((function == BOTH) || (function == SEND)
+					|| (function == RECEIVE));
+			break;
+	}
+	return ret;
 }
 
 /*======================================================================*
@@ -285,15 +308,15 @@ PUBLIC int sys_sendrec(int function, int src_dest, MESSAGE* m,  struct proc* p){
 		ret = msg_send(p, src_dest, m);
 		if(ret != 0){
 			return ret;
-		}else if(function == RECEIVE){
+		}
+	}else if(function == RECEIVE){
 			ret = msg_receive(p, src_dest, m);
 			if(ret != 0){
 				return ret;
 			}
-		}else{
-			panic("{sys_sendrec} invalid function: "
+	}else{
+		panic("{sys_sendrec} invalid function: "
 					"%d (SEND:%d, RECEIVE:%d).", function, SEND, RECEIVE);
 		}
-	}
 	return 0;
 }

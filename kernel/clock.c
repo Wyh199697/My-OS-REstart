@@ -27,10 +27,10 @@ PUBLIC void clock_handler(int irq){
 	schedule();
 }
 
-/*PUBLIC void milli_delay(int milli_sec){
+PUBLIC void milli_delay(int milli_sec){
 	int t = get_ticks();
 	while(((get_ticks()-t)*1000/HZ) < milli_sec){}
-}*/
+}
 
 PUBLIC void init_clock(){
 	out_byte(TIMER_MODE, RATE_GENERATOR);
