@@ -14,7 +14,7 @@ PRIVATE void block(struct proc* p);
 PRIVATE void unblock(PROCESS* p);
 PRIVATE int deadlock(int src, int dest);
 
-PRIVATE int  msg_send(struct proc* current, int dest, MESSAGE* m){//current主动发送消息，dest被动接受消息，进入这里的时候允许硬件中断，那么时钟中断就会发生，然后进行进程调度
+PRIVATE int  msg_send(struct proc* current, int dest, MESSAGE* m){//current主动发送消息，dest被动接受消息，进入这里的时候允许硬件中断，那么时钟中断就会发生，然后进行进程调度(大误)，实际上ring0的时候会相应中断，但是不会处理中断，所以不会发生死锁
 	PROCESS* sender = current;
 	PROCESS* p_dest = proc_table + dest;
 	assert(proc2pid(sender) != dest); //garantee the sender is not itself
@@ -159,8 +159,7 @@ PRIVATE int  msg_receive(struct proc* current, int src, MESSAGE* m){
 		p_from->p_flags &= ~SENDING;
 
 		unblock(p_from);
-	}else{//1.假如这里发生了进程调度，p还没进入receiving状态
-		schedule();
+	}else{
 		p_who_wanna_recv->p_flags |= RECEIVING;
 		p_who_wanna_recv->p_msg = m;
 		p_who_wanna_recv->p_recvfrom = src;
