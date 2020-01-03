@@ -14,7 +14,7 @@ PRIVATE void block(struct proc* p);
 PRIVATE void unblock(PROCESS* p);
 PRIVATE int deadlock(int src, int dest);
 
-PRIVATE int  msg_send(struct proc* current, int dest, MESSAGE* m){
+PRIVATE int  msg_send(struct proc* current, int dest, MESSAGE* m){//current主动发送消息，dest被动接受消息，进入这里的时候允许硬件中断，那么时钟中断就会发生，然后进行进程调度
 	PROCESS* sender = current;
 	PROCESS* p_dest = proc_table + dest;
 	assert(proc2pid(sender) != dest); //garantee the sender is not itself
@@ -23,13 +23,13 @@ PRIVATE int  msg_send(struct proc* current, int dest, MESSAGE* m){
 	}
 	if((p_dest->p_flags & RECEIVING) && 
 		(p_dest->p_recvfrom == proc2pid(sender) ||
-		 p_dest->p_recvfrom == ANY)){//wtf is ANY?
+		 p_dest->p_recvfrom == ANY)){
 		assert(p_dest->p_msg);
 		assert(m);
 		phys_copy(va2la(dest, p_dest->p_msg),
 				  va2la(proc2pid(sender), m),
 				  sizeof(MESSAGE));
-		p_dest->p_msg = 0; //等于0怎么获取消息体
+		p_dest->p_msg = 0;
 		p_dest->p_flags &= ~RECEIVING;
 		p_dest->p_recvfrom = NO_TASK;
 		unblock(p_dest);
@@ -42,7 +42,7 @@ PRIVATE int  msg_send(struct proc* current, int dest, MESSAGE* m){
 		assert(sender->p_msg == 0);
 		assert(sender->p_recvfrom == NO_TASK);
 		assert(sender->p_sendto == NO_TASK);
-	}else{
+	}else{//2.因为p还不是receiving状态，所以进入这里，那么是否会发生死锁
 		sender->p_flags |= SENDING;
 		assert(sender->p_flags == SENDING);
 		sender->p_sendto = dest;
@@ -139,10 +139,10 @@ PRIVATE int  msg_receive(struct proc* current, int src, MESSAGE* m){
 		}
 	}
 	if(copyok){
-		if(p_from == p_who_wanna_recv->q_sending){//这里的逻辑有点不懂
+		if(p_from == p_who_wanna_recv->q_sending){
 			assert(prev == 0);
 			p_who_wanna_recv->q_sending = p_from->next_sending;
-			p_from->next_sending = 0; //为什么一定是0？
+			p_from->next_sending = 0; 
 		}else{
 			assert(prev);
 			prev->next_sending = p_from->next_sending;
@@ -159,7 +159,8 @@ PRIVATE int  msg_receive(struct proc* current, int src, MESSAGE* m){
 		p_from->p_flags &= ~SENDING;
 
 		unblock(p_from);
-	}else{
+	}else{//1.假如这里发生了进程调度，p还没进入receiving状态
+		schedule();
 		p_who_wanna_recv->p_flags |= RECEIVING;
 		p_who_wanna_recv->p_msg = m;
 		p_who_wanna_recv->p_recvfrom = src;
@@ -231,7 +232,7 @@ PUBLIC void reset_msg(MESSAGE*  p){
 	memset(p, 0, sizeof(MESSAGE));
 }
 
-PUBLIC int send_recv(int function, int src_dest, MESSAGE* msg){
+PUBLIC int send_recv(int function, int src_dest, MESSAGE* msg){//对sendrec函数的封装
 	int ret = 0;
 	if(function == RECEIVE){
 		memset(msg, 0, sizeof(MESSAGE));
@@ -302,7 +303,6 @@ PUBLIC int sys_sendrec(int function, int src_dest, MESSAGE* m,  struct proc* p){
 	int caller = proc2pid(p);
 	MESSAGE* mla = (MESSAGE*)va2la(caller, m);
 	mla->source = caller;
-
 	assert(mla->source != src_dest);
 	if(function == SEND){
 		ret = msg_send(p, src_dest, m);

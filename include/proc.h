@@ -51,7 +51,7 @@ typedef struct task{
 
 /* Number of tasks */
 #define NR_TASKS	2
-#define NR_PROCS	3
+#define NR_PROCS	1
 #define FIRST_PROC	proc_table[0]
 #define LAST_PROC	proc_table[NR_TASKS + NR_PROCS - 1]
 

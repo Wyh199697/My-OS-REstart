@@ -135,7 +135,7 @@ PUBLIC int sys_printx(int _unused1, int _unused2, char* s, struct proc* p_proc){
 	char ch;
 	char reenter_err[] = "? k_reenter is incorrect for unknown reason";
 	reenter_err[0] = MAG_CH_PANIC;
-	//没明白这样处理的意义内核态和用户态为什么字符串地址不同？
+	//没明白这样处理的意义内核态和用户态为什么字符串地址不同？有可能是因为防止任务和进程的段基址不同，这个说法的前提是ring0的段基址等于0，当用户态调用的时候用va2la函数算出的线性地址就是ring0的偏移地址。ring0段基址应该总是为0
 	if(k_reenter == 0){ //用户态调用系统调用会使k_reenter=0
 		p = va2la(proc2pid(p_proc), s);
 	}else if(k_reenter > 0){ //内核态调用系统调用会使k_reenter>0

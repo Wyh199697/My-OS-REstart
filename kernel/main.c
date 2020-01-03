@@ -101,11 +101,11 @@ void TestA()
 {
 	int i = 0;
 	while (1) {
-		//printf("%x",get_ticks());
-		printf("a");
+		printf("%d  ",i++);
+		//printf("a");
 		//disp_color_str("A.", BRIGHT | MAKE_COLOR(BLACK, RED));
 		//disp_int(get_ticks());
-		milli_delay(200);
+		milli_delay(20000);
 	}
 }
 
@@ -116,7 +116,7 @@ void TestB()
 {
 	int i = 0x1000;
 	while(1){
-		printf("b");
+		//printf("b");
 		//disp_color_str("B.", BRIGHT | MAKE_COLOR(BLACK, RED));
 		//disp_int(get_ticks());
 		milli_delay(200);
@@ -130,7 +130,7 @@ void TestC()
 {
 	int i = 0x2000;
 	while(1){
-		printf("c");
+		//printf("c");
 		//disp_color_str("C.", BRIGHT | MAKE_COLOR(BLACK, RED));
 		//disp_int(get_ticks());
 		milli_delay(200);
