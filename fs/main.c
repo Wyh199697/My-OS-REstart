@@ -12,6 +12,7 @@
 
 #include "hd.h"
 
+//系统开始运行task_fs，给task_hd发送消息
 PUBLIC void task_fs(){
 	printf("Task FS begin.\n");
 	MESSAGE driver_msg;

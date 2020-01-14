@@ -19,7 +19,7 @@ PRIVATE void print_identify_info(u16* hdinfo);
 
 PRIVATE u8 hd_status;
 PRIVATE u8 hdbuf[SECTOR_SIZE * 2];
-
+//接到task_fs发来的消息，调用ring1程序，给硬盘发送命令，随后等待中断，中断发生之后，通知task_hd继续执行
 PUBLIC void task_hd(){
 	MESSAGE msg;
 	init_hd();

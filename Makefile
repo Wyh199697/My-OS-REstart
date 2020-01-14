@@ -31,7 +31,7 @@ clean :
 	rm -f $(OBJS)
 
 realclean : 
-	rm -f $(OBJS) $(ORANGESBOOT) $(ORANGESKERNEL)
+	rm -f $(OBJS) $(ORANGESBOOT) $(ORANGESKERNEL) 80m.img.lock
 
 disasm : 
 	$(DASM) $(DASMFLAGS) $(ORANGESKERNEL) > $(DASMOUTPUT)

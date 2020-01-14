@@ -331,7 +331,7 @@ PUBLIC void inform_int(int task_nr){
 		p->p_flags &= ~RECEIVING;
 		p->p_recvfrom = NO_TASK;
 		assert(p->p_flags == 0);
-		unblock(p);
+		unblock(p);//这句才是重点，取消进程阻塞
 
 		assert(p->p_flags == 0);
 		assert(p->p_msg == 0);
