@@ -29,6 +29,7 @@ void assertion_failure(char *exp, char *file, char *base_file, int line);
 #define INTERRUPT	-10
 #define TASK_TTY	0
 #define TASK_SYS	1
+#define TASK_HD		2
 /* #define TASK_WINCH	2 */
 /* #define TASK_FS	3 */
 /* #define TASK_MM	4 */
@@ -90,6 +91,13 @@ enum msgtype {
 
 	/* SYS task */
 	GET_TICKS,
+
+	/* message type for drivers */
+	DEV_OPEN = 1001,
+	DEV_CLOSE,
+	DEV_READ,
+	DEV_WRITE,
+	DEV_IOCTL
 };
 
 /* console */
@@ -142,5 +150,13 @@ enum msgtype {
 			     */
 #define TIMER_FREQ     1193182L/* clock frequency for timer in PC and AT */
 #define HZ             100  /* clock freq (software settable on IBM-PC) */
+
+
+#define	DIOCTL_GET_GEO	1
+
+/* Hard Drive */
+#define SECTOR_SIZE		512
+#define SECTOR_BITS		(SECTOR_SIZE * 8)
+#define SECTOR_SIZE_SHIFT	9
 
 #endif

@@ -1,10 +1,10 @@
 nasm boot.asm -o boot.bin
-dd if=boot.bin of=a.img bs=512 count=1 conv=notrunc
+dd if=boot.bin of=a.img bs=512 count=1 conv=notrunc  boot.bin不需要fat12头，他位于引导扇区
 nasm loader.asm -o loader.bin
 nasm -f elf kernel.asm -o kernel.o
 ld -s -Ttext 0x30400 -o kernel.bin kernel.o
 sudo mount -o loop a.img /mnt/floppy
-sudo cp loader.bin /mnt/floppy -v
+sudo cp loader.bin /mnt/floppy -v  loader.bin和kernel.bin需要fat12头，便于载入内存，所以命令只需要复制就可以了
 sudo cp kernel.bin /mnt/floppy -v
 sudo umount /mnt/floppy
 
