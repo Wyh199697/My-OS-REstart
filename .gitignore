@@ -4,3 +4,5 @@
 *.o
 *.swp
 a.img
+80m.img
+80m.img.lock
