@@ -53,7 +53,8 @@ PUBLIC void init_keyboard(){
 
 	set_leds();
 
-	put_irq_handler(KEYBOARD_IRQ, keyboard_handler);
+	put_irq_handler(KEYBOARD_IRQ, keyboard_handler);/*设定键盘中断处理程序*/
+        enable_irq(KEYBOARD_IRQ);                       /*开键盘中断*/
 }
 
 PUBLIC void keyboard_read(TTY* p_tty)

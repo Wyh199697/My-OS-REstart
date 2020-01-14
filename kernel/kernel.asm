@@ -211,10 +211,23 @@ hwint07:		; Interrupt routine for irq 7 (printer)
 	
 ; ---------------------------------
 %macro  hwint_slave     1
-        push    %1
-        call    spurious_irq
-        add     esp, 4
-        hlt
+        call	save
+	in	al, INT_S_CTLMASK	; `.
+	or	al, (1 << (%1 - 8))	;  | 屏蔽当前中断
+	out	INT_S_CTLMASK, al	; /
+	mov	al, EOI			; `. 置EOI位(master)
+	out	INT_M_CTL, al		; /
+	nop				; `. 置EOI位(slave)
+	out	INT_S_CTL, al		; /  一定注意：slave和master都要置EOI
+	sti	; CPU在响应中断的过程中会自动关中断，这句之后就允许响应新的中断
+	push	%1			; `.
+	call	[irq_table + 4 * %1]	;  | 中断处理程序
+	pop	ecx			; /
+	cli
+	in	al, INT_S_CTLMASK	; `.
+	and	al, ~(1 << (%1 - 8))	;  | 恢复接受当前中断
+	out	INT_S_CTLMASK, al	; /
+	ret
 %endmacro
 ; ---------------------------------
 
@@ -346,7 +359,9 @@ restart:
 	lldt [esp + P_LDT_SEL]
 	lea eax,[esp + P_STACKTOP]
 	mov dword [tss + TSS3_S_SP0],eax
-restart_reenter:
+restart_reenter:		;进入这里的话，代表中断重入了，ring0到ring0不会发生栈的变化，所以相当于ring0暂停一会儿然后继续运行
+;上面好像理解有误，在发生中断重入(嵌套)和正常情况下不同的只是在重入时不会因为进程调度切换进程，并且如果是硬中断就屏蔽当前中断，其余中断正常响应和处理。
+;所以在消息收发的时候不会发生进程切换，在进程调度时也会响应键盘中断和中断处理
 	dec dword [k_reenter]
 	pop gs
 	pop fs
@@ -369,4 +384,4 @@ sys_call:
 	add esp, 4 * 4
 	mov [esi+EAXREG-P_STACKBASE],eax	;保存eax的值
 	cli
-	ret			;return之后上面的代码会执行iretd
+	ret			;return之后会跳转到上面的restart或者restart_reenter代码会执行iretd
