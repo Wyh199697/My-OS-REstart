@@ -2,12 +2,13 @@
 #include "const.h"
 #include "protect.h"
 #include "string.h"
+#include "fs.h"
 #include "proc.h"
 #include "tty.h"
 #include "console.h"
 #include "global.h"
-#include "keyboard.h"
 #include "proto.h"
+#include "hd.h"
 
 PRIVATE void set_cursor(u32 position);
 PRIVATE void set_video_start_addr(u32 addr);

@@ -1,13 +1,15 @@
 #include "type.h"
+#include "stdio.h"
 #include "const.h"
 #include "protect.h"
-#include "console.h"
-#include "tty.h"
-#include "proc.h"
-#include "proto.h"
 #include "string.h"
+#include "fs.h"
+#include "proc.h"
+#include "tty.h"
+#include "console.h"
 #include "global.h"
 #include "keyboard.h"
+#include "proto.h"
 
 #define TTY_FIRST	(tty_table)
 #define TTY_END		(tty_table + NR_CONSOLES)
@@ -135,9 +137,9 @@ PUBLIC int sys_printx(int _unused1, int _unused2, char* s, struct proc* p_proc){
 	char ch;
 	char reenter_err[] = "? k_reenter is incorrect for unknown reason";
 	reenter_err[0] = MAG_CH_PANIC;
-	//没明白这样处理的意义内核态和用户态为什么字符串地址不同？有可能是因为防止任务和进程的段基址不同，这个说法的前提是ring0的段基址等于0，当用户态调用的时候用va2la函数算出的线性地址就是ring0的偏移地址。ring0段基址应该总是为0
+	//没明白这样处理的意义内核态和用户态为什么字符串地址不同？有可能是因为防止ring0代码和ring1和3代码的段基址不同，这个说法的前提是ring0的段基址等于0，当用户态调用的时候用va2la函数算出的线性地址就是ring0的偏移地址。ring0段基址应该总是为0
 	if(k_reenter == 0){ //用户态调用系统调用会使k_reenter=0
-		p = va2la(proc2pid(p_proc), s);
+		p = va2la(proc2pid(p_proc), s);//计算出字符串在ring0下的偏移地址，ds寄存器段基地址为0
 	}else if(k_reenter > 0){ //内核态调用系统调用会使k_reenter>0
 		p = s;
 	}else{

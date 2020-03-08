@@ -1,12 +1,14 @@
 #include "type.h"
 #include "const.h"
 #include "protect.h"
+#include "string.h"
+#include "fs.h"
+#include "proc.h"
 #include "tty.h"
 #include "console.h"
-#include "proc.h"
-#include "proto.h"
-#include "string.h"
 #include "global.h"
+#include "proto.h"
+#include "hd.h"
 
 PUBLIC char* itoa(char * str, int num){
 	char * p = str;

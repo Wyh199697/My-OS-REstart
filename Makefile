@@ -7,14 +7,22 @@ DASM = ndisasm
 CC = gcc
 LD = ld
 ASMBFLAGS = -I boot/include/
-ASMKFLAGS = -I include/ -f elf
-CFLAGS = -I include/ -m32 -c -fno-builtin -fno-stack-protector
+ASMKFLAGS = -I include/ -I include/sys/ -f elf
+CFLAGS = -I include/ -I include/sys/ -m32 -c -fno-builtin -fno-stack-protector
 LDFLAGS = -m elf_i386 -s -Ttext $(ENTRYPOINT) -e $(ENTRYOFFSET)
 
 ORANGESBOOT = boot/boot.bin boot/loader.bin
 ORANGESKERNEL = kernel/kernel.bin
-OBJS = kernel/kernel.o kernel/start.o lib/string.o lib/kliba.o kernel/i8259.o kernel/global.o lib/klib.o kernel/protect.o kernel/main.o kernel/clock.o kernel/proc.o kernel/syscall.o kernel/keyboard.o kernel/tty.o kernel/console.o kernel/printf.o kernel/vsprintf.o lib/misc.o kernel/systask.o fs/main.o kernel/hd.o
-DASMOUTPUT = kernel.bin.asm
+OBJS = kernel/kernel.o lib/syscall.o kernel/start.o kernel/main.o\
+			kernel/clock.o kernel/keyboard.o kernel/tty.o kernel/console.o\
+			kernel/i8259.o kernel/global.o kernel/protect.o kernel/proc.o\
+			kernel/systask.o kernel/hd.o\
+			lib/printf.o lib/vsprintf.o\
+			lib/kliba.o lib/klib.o lib/string.o lib/misc.o\
+			lib/open.o lib/close.o lib/read.o lib/write.o\
+			lib/syslog.o lib/getpid.o\
+			fs/main.o fs/open.o fs/misc.o fs/read_write.o\
+			fs/disklog.o
 
 
 .PHONY : everything final image clean realclean disasm all buildimg
@@ -52,93 +60,95 @@ boot/loader.bin : boot/loader.asm boot/include/fat12hdr.inc boot/include/load.in
 $(ORANGESKERNEL) : $(OBJS)
 	$(LD) $(LDFLAGS) -o $(ORANGESKERNEL) $(OBJS)
 
-kernel/kernel.o : kernel/kernel.asm include/sconst.inc
+kernel/kernel.o : kernel/kernel.asm
 	$(ASM) $(ASMKFLAGS) -o $@ $<
-	
-kernel/syscall.o : kernel/syscall.asm include/sconst.inc
+
+lib/syscall.o : lib/syscall.asm
+	$(ASM) $(ASMKFLAGS) -o $@ $<
+
+kernel/start.o: kernel/start.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/main.o: kernel/main.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/clock.o: kernel/clock.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/keyboard.o: kernel/keyboard.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/tty.o: kernel/tty.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/console.o: kernel/console.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/i8259.o: kernel/i8259.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/global.o: kernel/global.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/protect.o: kernel/protect.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/proc.o: kernel/proc.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+lib/printf.o: lib/printf.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+lib/vsprintf.o: lib/vsprintf.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/systask.o: kernel/systask.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/hd.o: kernel/hd.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+lib/klib.o: lib/klib.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+lib/misc.o: lib/misc.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+lib/kliba.o : lib/kliba.asm
 	$(ASM) $(ASMKFLAGS) -o $@ $<
 
 lib/string.o : lib/string.asm
 	$(ASM) $(ASMKFLAGS) -o $@ $<
 
-lib/kliba.o : lib/kliba.asm include/sconst.inc
-	$(ASM) $(ASMKFLAGS) -o $@ $<
-
-kernel/start.o : kernel/start.c include/type.h include/const.h include/protect.h include/string.h include/proto.h include/global.h include/proc.h include/tty.h include/console.h
+lib/open.o: lib/open.c
 	$(CC) $(CFLAGS) -o $@ $<
 
-kernel/protect.o: kernel/protect.c /usr/include/stdc-predef.h include/type.h \
- include/const.h include/protect.h include/global.h include/proto.h include/proc.h
+lib/close.o: lib/close.c
 	$(CC) $(CFLAGS) -o $@ $<
 
-kernel/i8259.o : kernel/i8259.c include/type.h include/const.h include/protect.h include/proto.h include/proc.h
+fs/main.o: fs/main.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+fs/open.o: fs/open.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+fs/misc.o: fs/misc.c
 	$(CC) $(CFLAGS) -o $@ $<
 	
-kernel/global.o: kernel/global.c include/type.h \
- include/const.h include/protect.h include/proto.h include/global.h include/proc.h
+fs/read_write.o: fs/read_write.c
 	$(CC) $(CFLAGS) -o $@ $<
 	
-lib/klib.o: lib/klib.c include/type.h \
- include/const.h include/protect.h include/proto.h include/string.h \
- include/global.h include/proc.h
+lib/read.o: lib/read.c
 	$(CC) $(CFLAGS) -o $@ $<
 
-main.o: kernel/main.c include/type.h \
- include/const.h include/protect.h include/proto.h include/string.h \
- include/global.h include/proc.h
-	$(CC) $(CFLAGS) -o $@ $<
-
-clock.o: kernel/clock.c include/type.h \
- include/const.h include/protect.h include/proto.h include/string.h \
- include/global.h include/proc.h
+lib/write.o: lib/write.c
 	$(CC) $(CFLAGS) -o $@ $<
 	
-proc.o: kernel/clock.c include/type.h \
- include/const.h include/protect.h include/proto.h include/string.h \
- include/global.h include/proc.h
+fs/disklog.o: fs/disklog.c
 	$(CC) $(CFLAGS) -o $@ $<
-
-keyboard.o: kernel/keyboard.c include/type.h \
- include/const.h include/protect.h include/proto.h include/string.h \
- include/global.h include/proc.h include/keyboard.h include/keymap.h
+	
+lib/syslog.o: lib/syslog.c
 	$(CC) $(CFLAGS) -o $@ $<
-
-tty.o: kernel/tty.c include/type.h \
- include/const.h include/protect.h include/proto.h include/string.h \
- include/global.h include/proc.h include/keyboard.h include/keymap.h
-	$(CC) $(CFLAGS) -o $@ $<
-
-console.o: kernel/console.c include/type.h \
- include/const.h include/protect.h include/proto.h include/string.h \
- include/global.h include/proc.h include/keyboard.h include/keymap.h
-	$(CC) $(CFLAGS) -o $@ $<
-
-printf.o: kernel/printf.c include/type.h \
- include/const.h include/protect.h include/proto.h include/string.h \
- include/global.h include/proc.h include/keyboard.h include/keymap.h
-	$(CC) $(CFLAGS) -o $@ $<
-
-vsprintf.o: kernel/vsprintf.c include/type.h \
- include/const.h include/protect.h include/proto.h include/string.h \
- include/global.h include/proc.h include/keyboard.h include/keymap.h
-	$(CC) $(CFLAGS) -o $@ $<
-
-misc.o: lib/misc.c include/type.h \
- include/const.h include/protect.h include/proto.h include/string.h \
- include/global.h include/proc.h include/keyboard.h include/keymap.h
-	$(CC) $(CFLAGS) -o $@ $<
-
-systask.o: kernel/systask.c include/type.h \
- include/const.h include/protect.h include/proto.h include/string.h \
- include/global.h include/proc.h include/keyboard.h include/keymap.h
-	$(CC) $(CFLAGS) -o $@ $<
-
-hd.o: kernel/hd.c include/type.h \
- include/const.h include/protect.h include/proto.h include/string.h \
- include/global.h include/proc.h include/keyboard.h include/keymap.h
-	$(CC) $(CFLAGS) -o $@ $<
-
-main.o: fs/main.c include/type.h \
- include/const.h include/protect.h include/proto.h include/string.h \
- include/global.h include/proc.h include/keyboard.h include/keymap.h
+	
+lib/getpid.o: lib/getpid.c
 	$(CC) $(CFLAGS) -o $@ $<

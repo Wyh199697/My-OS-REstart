@@ -1,12 +1,15 @@
 #include "type.h"
+#include "stdio.h"
 #include "const.h"
 #include "protect.h"
-#include "console.h"
-#include "tty.h"
-#include "proc.h"
-#include "proto.h"
 #include "string.h"
+#include "fs.h"
+#include "proc.h"
+#include "tty.h"
+#include "console.h"
 #include "global.h"
+#include "proto.h"
+#include "hd.h"
 
 
 PUBLIC void kernel_main(){
@@ -99,14 +102,34 @@ PUBLIC void kernel_main(){
  *======================================================================*/
 void TestA()
 {
-	int i = 0;
-	while (1) {
-		printf("%d  ",i++);
-		//printf("a");
-		//disp_color_str("A.", BRIGHT | MAKE_COLOR(BLACK, RED));
-		//disp_int(get_ticks());
-		milli_delay(20000);
-	}
+	int fd;
+	int n;
+	const char filename[] = "blah";
+	const char bufw[] = "abcde";
+	const int rd_bytes = 3;
+	char bufr[rd_bytes];
+
+	assert(rd_bytes <= strlen(bufw));
+
+	fd = open(filename, O_CREAT | O_RDWR);
+	assert(fd != -1);
+	printf("File opened. fd: %d\n", fd);
+
+	n = write(fd, bufw, strlen(bufw));
+	assert(n == strlen(bufw));
+
+	close(fd);
+
+	fd = open(filename, O_RDWR);
+	n = read(fd, bufr, rd_bytes);
+	assert(n == rd_bytes);
+	bufr[n] = 0;
+	printf("%d bytes read: %s\n", n, bufr);
+
+	close(fd);
+	//syslog("asdsad");
+
+	spin("TestA");
 }
 
 /*======================================================================*
@@ -114,10 +137,10 @@ void TestA()
  *======================================================================*/
 void TestB()
 {
-	int i = 0x1000;
+	//syslog("test");
 	while(1){
-		printf("b");
-		//disp_color_str("B.", BRIGHT | MAKE_COLOR(BLACK, RED));
+		printf("c");
+		//disp_color_str("C.", BRIGHT | MAKE_COLOR(BLACK, RED));
 		//disp_int(get_ticks());
 		milli_delay(200);
 	}

@@ -1,12 +1,15 @@
 #include "type.h"
+#include "stdio.h"
 #include "const.h"
 #include "protect.h"
+#include "string.h"
+#include "fs.h"
 #include "proc.h"
-#include "console.h"
 #include "tty.h"
+#include "console.h"
 #include "global.h"
 #include "proto.h"
-#include "string.h"
+#include "hd.h"
 
 PRIVATE void init_idt_desc(u8 vector, u8 desc_type, int_handler handler, u8 privilege);
 PRIVATE void init_descriptor(DESCRIPTOR * p_desc, u32 base, u32 limit, u16 attribute);
