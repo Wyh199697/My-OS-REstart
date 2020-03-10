@@ -141,11 +141,21 @@ LABEL_GOON_LOADING_FILE:
 	call GetFATEntry
 	cmp ax,0fffh ;ax=下个簇号
 	jz LABEL_FILE_LOADED
+
+	push ax
+	mov dx, RootDirSectors
+	add ax, dx
+	add ax, DeltaSectorNo
+	add bx, [BPB_BytsPerSec]
+	jc .1
+	jmp .2
+.1:
 	push ax ;这里push ax，上面pop ax
 	mov dx,RootDirSectors
 	add ax,dx
 	add ax,DeltaSectorNo
 	add bx,[BPB_BytsPerSec] ;内存+512，加载新的扇区
+.2:
 	jmp LABEL_GOON_LOADING_FILE
 LABEL_FILE_LOADED:
 	call KillMotor

@@ -3,6 +3,7 @@ PUBLIC	void	memset(void* p_dst, char ch, int size);
 //PUBLIC char* strcpy(char*src, char*dst);
 PUBLIC int strlen(char* p_str);
 PUBLIC	int	memcmp(const void * s1, const void *s2, int n);
+PUBLIC	int	strcmp(const char * s1, const char *s2);
 
 #define	phys_copy	memcpy
 #define	phys_set	memset

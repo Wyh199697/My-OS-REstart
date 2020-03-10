@@ -68,6 +68,8 @@
 #define MAG_CH_PANIC	'\002'
 #define MAG_CH_ASSERT	'\003'
 
+#define	MAX_TICKS	0x7FFFABCD
+
 /**
  * @enum msgtype
  * @brief MESSAGE types
@@ -87,6 +89,9 @@ enum msgtype {
 
 	/* TTY, SYS, FS, MM, etc */
 	SYSCALL_RET,
+	
+	/* FS & TTY */
+	SUSPEND_PROC, RESUME_PROC,
 
 	/* message type for drivers */
 	DEV_OPEN = 1001,

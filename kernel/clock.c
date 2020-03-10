@@ -13,14 +13,20 @@
 
 PUBLIC void clock_handler(int irq){
 	//disp_str("#");
-	ticks++;
-	p_proc_ready->ticks--;
-	//disp_int(p_proc_ready->ticks);
-	if(k_reenter != 0){
-		//disp_str("!");
+	if (++ticks >= MAX_TICKS)
+		ticks = 0;
+
+	if (p_proc_ready->ticks)
+		p_proc_ready->ticks--;
+
+	if (key_pressed)
+		inform_int(TASK_TTY);
+
+	if (k_reenter != 0) {
 		return;
 	}
-	if(p_proc_ready->ticks > 0){
+
+	if (p_proc_ready->ticks > 0) {
 		return;
 	}
 	/*p_proc_ready++;

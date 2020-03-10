@@ -157,3 +157,9 @@ PUBLIC int	getpid		();
 PUBLIC int		do_disklog();
 PUBLIC int		disklog(char * logstr); /* for debug */
 PUBLIC void		dump_fd_graph(const char * fmt, ...);
+
+/* fs/link.c */
+PUBLIC int do_unlink();
+
+/* fs/link.c */
+PUBLIC int unlink(const char* pathname);

@@ -20,9 +20,9 @@ OBJS = kernel/kernel.o lib/syscall.o kernel/start.o kernel/main.o\
 			lib/printf.o lib/vsprintf.o\
 			lib/kliba.o lib/klib.o lib/string.o lib/misc.o\
 			lib/open.o lib/close.o lib/read.o lib/write.o\
-			lib/syslog.o lib/getpid.o\
+			lib/syslog.o lib/getpid.o lib/unlink.o\
 			fs/main.o fs/open.o fs/misc.o fs/read_write.o\
-			fs/disklog.o
+			fs/disklog.o fs/link.o
 
 
 .PHONY : everything final image clean realclean disasm all buildimg
@@ -151,4 +151,10 @@ lib/syslog.o: lib/syslog.c
 	$(CC) $(CFLAGS) -o $@ $<
 	
 lib/getpid.o: lib/getpid.c
+	$(CC) $(CFLAGS) -o $@ $<
+	
+fs/link.o: fs/link.c
+	$(CC) $(CFLAGS) -o $@ $<
+	
+lib/unlink.o: lib/unlink.c
 	$(CC) $(CFLAGS) -o $@ $<

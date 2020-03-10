@@ -21,6 +21,7 @@ EXTERN int ticks;
 EXTERN TTY tty_table[NR_CONSOLES];
 EXTERN CONSOLE console_table[NR_CONSOLES];
 EXTERN	int nr_current_console;
+EXTERN	int	key_pressed;
 
 /* FS */
 extern	u8 *			fsbuf;

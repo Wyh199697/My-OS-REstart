@@ -15,13 +15,16 @@
 #define TTY_END		(tty_table + NR_CONSOLES)
 
 PRIVATE void init_tty(TTY* p_tty);
-PRIVATE void tty_do_read(TTY* p_tty);
-PRIVATE void tty_do_write(TTY*p_tty);
+PRIVATE void	tty_dev_read	(TTY* tty);
+PRIVATE void	tty_dev_write	(TTY* tty);
+PRIVATE void tty_do_read(TTY* tty, MESSAGE* msg);
+PRIVATE void tty_do_write(TTY* tty, MESSAGE* msg);
 PRIVATE void put_key(TTY* p_tty, u32 key);
 
 PUBLIC void task_tty(){
 	//assert(0);
 	TTY* p_tty;
+	MESSAGE msg;
 	init_keyboard();
 
 	for(p_tty = TTY_FIRST; p_tty < TTY_END; p_tty++){
@@ -32,8 +35,34 @@ PUBLIC void task_tty(){
 
 	while(1){
 		for(p_tty = TTY_FIRST; p_tty < TTY_END; p_tty++){
-			tty_do_read(p_tty);
-			tty_do_write(p_tty);
+			do{	
+				tty_dev_read(p_tty);
+				tty_dev_write(p_tty);
+			}while(p_tty->inbuf_count);
+		}
+		send_recv(RECEIVE, ANY, &msg);
+		int src = msg.source;
+		assert(src != TASK_TTY);
+
+		TTY* ptty = &tty_table[msg.DEVICE]; //进程P打开哪个tty
+		switch(msg.type){
+			case DEV_OPEN:
+				reset_msg(&msg);
+				msg.type = SYSCALL_RET;
+				send_recv(SEND, src, &msg);
+				break;
+			case DEV_READ:
+				tty_do_read(ptty, &msg);
+				break;
+			case DEV_WRITE:
+				tty_do_write(ptty, &msg);
+				break;
+			case HARD_INT:
+				key_pressed = 0;
+				continue;
+			default:
+				dump_msg("TTY::unknown msg", &msg);
+				break;
 		}
 	}
 }
@@ -44,23 +73,37 @@ PRIVATE void init_tty(TTY* p_tty){
 	init_screen(p_tty);
 }
 
-PRIVATE void tty_do_read(TTY* p_tty){
-	if(is_current_console(p_tty->p_console)){
-		keyboard_read(p_tty);
-	}
+PRIVATE void tty_do_read(TTY* tty, MESSAGE* msg){
+	/* tell the tty: */
+	tty->tty_caller   = msg->source;  /* who called, usually FS */
+	tty->tty_procnr   = msg->PROC_NR; /* who wants the chars */
+	tty->tty_req_buf  = va2la(tty->tty_procnr,
+				  msg->BUF);/* where the chars should be put */
+	tty->tty_left_cnt = msg->CNT; /* how many chars are requested */
+	tty->tty_trans_cnt= 0; /* how many chars have been transferred */
+
+	msg->type = SUSPEND_PROC;
+	msg->CNT = tty->tty_left_cnt;
+	send_recv(SEND, tty->tty_caller, msg);
 }
 
-PRIVATE void tty_do_write(TTY* p_tty){
-	if(p_tty->inbuf_count > 0){
-		char ch = *(p_tty->p_inbuf_tail);
-		p_tty->p_inbuf_tail++;
-		if(p_tty->p_inbuf_tail == p_tty->in_buf + TTY_IN_BYTES){
-			p_tty->p_inbuf_tail = p_tty->in_buf;
-		}
-		p_tty->inbuf_count--;
+PRIVATE void tty_do_write(TTY* tty, MESSAGE* msg){
+	char buf[TTY_OUT_BUF_LEN];
+	char * p = (char*)va2la(msg->PROC_NR, msg->BUF);
+	int i = msg->CNT;
+	int j;
 
-		out_char(p_tty->p_console, ch);
+	while (i) {
+		int bytes = min(TTY_OUT_BUF_LEN, i);
+		phys_copy(va2la(TASK_TTY, buf), (void*)p, bytes);
+		for (j = 0; j < bytes; j++)
+			out_char(tty->p_console, buf[j]);
+		i -= bytes;
+		p += bytes;
 	}
+
+	msg->type = SYSCALL_RET;
+	send_recv(SEND, msg->source, msg);
 }
 
 PUBLIC void in_process(TTY* p_tty, u32 key)
@@ -169,4 +212,47 @@ PUBLIC int sys_printx(int _unused1, int _unused2, char* s, struct proc* p_proc){
 		out_char(tty_table[p_proc->nr_tty].p_console, ch);
 	}
 	return 0;
+}
+
+PRIVATE void tty_dev_read (TTY* tty){
+	if (is_current_console(tty->p_console)){
+		keyboard_read(tty);
+	}
+}
+
+PRIVATE void tty_dev_write(TTY* tty)
+{
+	while (tty->inbuf_count) {
+		char ch = *(tty->p_inbuf_tail);
+		tty->p_inbuf_tail++;
+		if (tty->p_inbuf_tail == tty->in_buf + TTY_IN_BYTES)
+			tty->p_inbuf_tail = tty->in_buf;
+		tty->inbuf_count--;
+
+		if (tty->tty_left_cnt) {
+			if (ch >= ' ' && ch <= '~') { /* printable */
+				out_char(tty->p_console, ch);
+				void * p = tty->tty_req_buf +
+					   tty->tty_trans_cnt;
+				phys_copy(p, (void *)va2la(TASK_TTY, &ch), 1);
+				tty->tty_trans_cnt++;
+				tty->tty_left_cnt--;
+			}
+			else if (ch == '\b' && tty->tty_trans_cnt) {
+				out_char(tty->p_console, ch);
+				tty->tty_trans_cnt--;
+				tty->tty_left_cnt++;
+			}
+
+			if (ch == '\n' || tty->tty_left_cnt == 0) {
+				out_char(tty->p_console, '\n');
+				MESSAGE msg;
+				msg.type = RESUME_PROC;
+				msg.PROC_NR = tty->tty_procnr;
+				msg.CNT = tty->tty_trans_cnt;
+				send_recv(SEND, tty->tty_caller, &msg);
+				tty->tty_left_cnt = 0;
+			}
+		}
+	}
 }

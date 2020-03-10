@@ -37,6 +37,12 @@ PUBLIC void task_fs(){
 			case WRITE:
 				fs_msg.CNT = do_rdwt();
 				break;
+			case UNLINK:
+				fs_msg.RETVAL = do_unlink();
+				break;
+			case RESUME_PROC:
+				src = fs_msg.PROC_NR;
+				break;
 			default:
 				dump_msg("FS::unknown message:", &fs_msg);
 				assert(0);
@@ -75,8 +81,10 @@ PUBLIC void task_fs(){
 			assert(0);
 		}
 	#endif*/
-		fs_msg.type = SYSCALL_RET;
-		send_recv(SEND, src, &fs_msg);
+		if (fs_msg.type != SUSPEND_PROC) {
+			fs_msg.type = SYSCALL_RET;
+			send_recv(SEND, src, &fs_msg);
+		}
 	}
 
 }
