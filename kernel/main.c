@@ -176,20 +176,15 @@ void TestB()
 	char rdbuf[128];
 
 	while (1) {
-		write(fd_stdout, "$ ", 2);
+		printf("$ ");
 		int r = read(fd_stdin, rdbuf, 70);
 		rdbuf[r] = 0;
 
-		if (strcmp(rdbuf, "hello") == 0) {
-			write(fd_stdout, "hello world!\n", 13);
-		}
-		else {
-			if (rdbuf[0]) {
-				write(fd_stdout, "{", 1);
-				write(fd_stdout, rdbuf, r);
-				write(fd_stdout, "}\n", 2);
-			}
-		}
+		if (strcmp(rdbuf, "hello") == 0)
+			printf("hello world!\n");
+		else
+			if (rdbuf[0])
+				printf("{%s}\n", rdbuf);
 	}
 
 	assert(0); /* never arrive here */
