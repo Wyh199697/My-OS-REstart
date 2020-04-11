@@ -1,4 +1,4 @@
-ENTRYPOINT = 0x30400
+ENTRYPOINT = 0x1000
 
 ENTRYOFFSET = 0x400
 
@@ -10,19 +10,30 @@ ASMBFLAGS = -I boot/include/
 ASMKFLAGS = -I include/ -I include/sys/ -f elf
 CFLAGS = -I include/ -I include/sys/ -m32 -c -fno-builtin -fno-stack-protector
 LDFLAGS = -m elf_i386 -s -Ttext $(ENTRYPOINT) -e $(ENTRYOFFSET)
+ARFLAGS		= rcs
 
 ORANGESBOOT = boot/boot.bin boot/loader.bin
 ORANGESKERNEL = kernel/kernel.bin
+LIB		= lib/orangescrt.a
 OBJS = kernel/kernel.o lib/syscall.o kernel/start.o kernel/main.o\
 			kernel/clock.o kernel/keyboard.o kernel/tty.o kernel/console.o\
 			kernel/i8259.o kernel/global.o kernel/protect.o kernel/proc.o\
 			kernel/systask.o kernel/hd.o\
 			lib/printf.o lib/vsprintf.o\
-			lib/kliba.o lib/klib.o lib/string.o lib/misc.o\
+			kernel/kliba.o kernel/klib.o lib/string.o lib/misc.o\
 			lib/open.o lib/close.o lib/read.o lib/write.o\
-			lib/syslog.o lib/getpid.o lib/unlink.o\
+			lib/syslog.o lib/getpid.o lib/unlink.o lib/fork.o\
+			lib/wait.o lib/exit.o\
 			fs/main.o fs/open.o fs/misc.o fs/read_write.o\
-			fs/disklog.o fs/link.o
+			fs/disklog.o fs/link.o\
+			mm/main.o mm/forkexit.o
+LOBJS		=  lib/syscall.o\
+			lib/printf.o lib/vsprintf.o\
+			lib/string.o lib/misc.o\
+			lib/open.o lib/read.o lib/write.o lib/close.o lib/unlink.o\
+			lib/getpid.o \
+			lib/fork.o lib/exit.o lib/wait.o
+			
 
 
 .PHONY : everything final image clean realclean disasm all buildimg
@@ -39,7 +50,7 @@ clean :
 	rm -f $(OBJS)
 
 realclean : 
-	rm -f $(OBJS) $(ORANGESBOOT) $(ORANGESKERNEL) 80m.img.lock
+	rm -f $(OBJS) $(LIB) $(ORANGESBOOT) $(ORANGESKERNEL) 80m.img.lock
 
 disasm : 
 	$(DASM) $(DASMFLAGS) $(ORANGESKERNEL) > $(DASMOUTPUT)
@@ -57,8 +68,11 @@ boot/boot.bin : boot/boot.asm boot/include/fat12hdr.inc boot/include/load.inc
 boot/loader.bin : boot/loader.asm boot/include/fat12hdr.inc boot/include/load.inc boot/include/pm.inc
 	$(ASM) $(ASMBFLAGS) -o $@ $<
 	
-$(ORANGESKERNEL) : $(OBJS)
+$(ORANGESKERNEL) : $(OBJS) $(LIB)
 	$(LD) $(LDFLAGS) -o $(ORANGESKERNEL) $(OBJS)
+
+$(LIB) : $(LOBJS)
+	$(AR) $(ARFLAGS) $@ $^
 
 kernel/kernel.o : kernel/kernel.asm
 	$(ASM) $(ASMKFLAGS) -o $@ $<
@@ -108,13 +122,13 @@ kernel/systask.o: kernel/systask.c
 kernel/hd.o: kernel/hd.c
 	$(CC) $(CFLAGS) -o $@ $<
 
-lib/klib.o: lib/klib.c
+kernel/klib.o: kernel/klib.c
 	$(CC) $(CFLAGS) -o $@ $<
 
 lib/misc.o: lib/misc.c
 	$(CC) $(CFLAGS) -o $@ $<
 
-lib/kliba.o : lib/kliba.asm
+kernel/kliba.o : kernel/kliba.asm
 	$(ASM) $(ASMKFLAGS) -o $@ $<
 
 lib/string.o : lib/string.asm
@@ -157,4 +171,19 @@ fs/link.o: fs/link.c
 	$(CC) $(CFLAGS) -o $@ $<
 	
 lib/unlink.o: lib/unlink.c
+	$(CC) $(CFLAGS) -o $@ $<
+	
+lib/fork.o: lib/fork.c
+	$(CC) $(CFLAGS) -o $@ $<
+	
+lib/wait.o: lib/wait.c
+	$(CC) $(CFLAGS) -o $@ $<
+	
+lib/exit.o: lib/exit.c
+	$(CC) $(CFLAGS) -o $@ $<
+	
+mm/main.o: mm/main.c
+	$(CC) $(CFLAGS) -o $@ $<
+	
+mm/forkexit.o: mm/forkexit.c
 	$(CC) $(CFLAGS) -o $@ $<

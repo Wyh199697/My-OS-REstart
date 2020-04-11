@@ -8,7 +8,7 @@ EXTERN u8 gdt_ptr[6];
 EXTERN DESCRIPTOR gdt[GDT_SIZE];
 EXTERN u8 idt_ptr[6];
 EXTERN GATE idt[IDT_SIZE];
-EXTERN PROCESS proc_table[NR_TASKS+NR_PROCS];
+EXTERN PROCESS proc_table[NR_TASKS + NR_PROCS];
 EXTERN	TSS		tss;
 EXTERN	PROCESS*	p_proc_ready;
 EXTERN char task_stack[STACK_SIZE_TOTAL];
@@ -34,3 +34,8 @@ EXTERN	struct inode		inode_table[NR_INODE];
 EXTERN	struct super_block	super_block[NR_SUPER_BLOCK];
 EXTERN	struct inode *		root_inode;
 
+/* MM */
+EXTERN	MESSAGE			mm_msg;
+extern	u8 *			mmbuf;
+extern	const int		MMBUF_SIZE;
+EXTERN	int			memory_size;

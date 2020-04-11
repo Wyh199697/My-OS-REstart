@@ -4,11 +4,13 @@
 /* Process */
 #define SENDING   0x02	/* set when proc trying to send */
 #define RECEIVING 0x04	/* set when proc trying to recv */
+#define WAITING   0x08	/* set when proc waiting for the child to terminate */
+#define HANGING   0x10	/* set when proc exits without being waited by parent */
+#define FREE_SLOT 0x20	/* set when proc table entry is not used
+			 * (ok to allocated to a new process)
+			 */
 
 #define	STR_DEFAULT_LEN	1024
-
-#define PUBLIC
-#define PRIVATE static
 
 #define EXTERN extern
 
@@ -21,8 +23,9 @@
 #define TASK_SYS	1
 #define TASK_HD		2
 /* #define TASK_WINCH	2 */
-#define TASK_FS	3
-/* #define TASK_MM	4 */
+#define TASK_FS		3
+#define TASK_MM		4 
+#define INIT		5
 #define ANY		(NR_TASKS + NR_PROCS + 10)
 #define NO_TASK		(NR_TASKS + NR_PROCS + 20)
 
@@ -92,6 +95,9 @@ enum msgtype {
 	
 	/* FS & TTY */
 	SUSPEND_PROC, RESUME_PROC,
+	
+	/* FS & MM */
+	FORK, EXIT, WAIT,
 
 	/* message type for drivers */
 	DEV_OPEN = 1001,

@@ -3,22 +3,23 @@
 #include "stdio.h"
 #include "const.h"
 #include "protect.h"
-#include "string.h"
 #include "fs.h"
-#include "proc.h"
 #include "tty.h"
 #include "console.h"
+#include "proc.h"
 #include "global.h"
 #include "proto.h"
-#include "hd.h"
+
 
 PUBLIC	TASK	task_table[NR_TASKS] = {
 	{task_tty, STACK_SIZE_TTY, "tty"},
 	{task_sys, STACK_SIZE_SYS, "sys"},
 	{task_hd, STACK_SIZE_HD, "hd"},
-	{task_fs,  STACK_SIZE_FS,  "fs" }};
+	{task_fs,  STACK_SIZE_FS,  "fs" },
+	{task_mm, STACK_SIZE_MM, "mm"}};
 
-PUBLIC  TASK    user_proc_table[NR_PROCS] = {
+PUBLIC  TASK    user_proc_table[NR_NATIVE_PROCS] = {
+	{Init,   STACK_SIZE_INIT,  "INIT" },
 	{TestA, STACK_SIZE_TESTA, "TestA"},
 	{TestB, STACK_SIZE_TESTB, "TestB"},
 	{TestC, STACK_SIZE_TESTC, "TestC"}};

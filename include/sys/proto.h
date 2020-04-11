@@ -17,13 +17,16 @@ PUBLIC void	enable_int();
 PUBLIC void	port_read(u16 port, void* buf, int n);
 PUBLIC void	port_write(u16 port, void* buf, int n);
 PUBLIC void	glitter(int row, int col);
+PUBLIC void get_boot_params(struct boot_params * pbp);
+PUBLIC int get_kernel_map(unsigned int * b, unsigned int * l);
 
 /* string.asm */
 PUBLIC char*	strcpy(char* dst, const char* src);
 
 /* protect.c */
 PUBLIC void	init_prot();
-PUBLIC u32	seg2phys(u16 seg);
+PUBLIC u32	seg2linear(u16 seg);
+PUBLIC void init_descriptor(DESCRIPTOR * p_desc, u32 base, u32 limit, u16 attribute);
 
 /* klib.c */
 PUBLIC void	delay(int time);
@@ -39,6 +42,7 @@ PUBLIC void TestA();
 PUBLIC void TestB();
 PUBLIC void TestC();
 PUBLIC void panic(const char *fmt, ...);
+PUBLIC void Init();
 
 /* i8259.c */
 PUBLIC void init_8259A();
@@ -91,13 +95,6 @@ PUBLIC void select_console(int nr_console);
 PUBLIC void init_screen(TTY* p_tty);
 PUBLIC int  is_current_console(CONSOLE* p_con);
 
-/* printf.c */
-PUBLIC  int     printf(const char *fmt, ...);
-#define	printl	printf
-
-/* vsprintf.c */
-PUBLIC  int     vsprintf(char *buf, const char *fmt, va_list args);
-PUBLIC	int	sprintf(char *buf, const char *fmt, ...);
 
 /* proc.c */
 PUBLIC	void	schedule();
@@ -131,27 +128,8 @@ PUBLIC	int	printx(char* str);
 /* 库函数 */
 /*--------*/
 
-/* lib/open.c */
-
-PUBLIC int open(const char* pathname, int flags);
-
-/* lib/close.c */
-PUBLIC int close(int fd);
-
-/*lib/read.c*/
-PUBLIC int read(int fd, void* buf, int count);
-
-/*lib/read.c*/
-PUBLIC int write(int fd, const void* buf, int count);
-
 /*fs/read_write.c*/
 PUBLIC int do_rdwt();
-
-/* lib/syslog.c */
-PUBLIC	int	syslog		(const char *fmt, ...);
-
-/* lib/getpid.c */
-PUBLIC int	getpid		();
 
 /* fs/disklog.c */
 PUBLIC int		do_disklog();
@@ -161,5 +139,13 @@ PUBLIC void		dump_fd_graph(const char * fmt, ...);
 /* fs/link.c */
 PUBLIC int do_unlink();
 
-/* fs/link.c */
-PUBLIC int unlink(const char* pathname);
+
+/* mm/forkexit.c */
+PUBLIC int do_fork();
+PUBLIC void do_exit(int status);
+PUBLIC void do_wait();
+
+/* mm/main.c */
+PUBLIC void task_mm();
+PUBLIC int alloc_mem(int pid, int memsize);
+PUBLIC int free_mem(int pid);

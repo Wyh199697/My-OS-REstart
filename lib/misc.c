@@ -1,4 +1,5 @@
 #include "type.h"
+#include "stdio.h"
 #include "const.h"
 #include "protect.h"
 #include "string.h"
@@ -9,6 +10,29 @@
 #include "global.h"
 #include "proto.h"
 #include "hd.h"
+
+PUBLIC int send_recv(int function, int src_dest, MESSAGE* msg){//对sendrec函数的封装
+	int ret = 0;
+	if(function == RECEIVE){
+		memset(msg, 0, sizeof(MESSAGE));
+	}
+	switch(function){
+		case BOTH:
+			ret = sendrec(SEND, src_dest, msg);
+			if(ret == 0){
+				ret = sendrec(RECEIVE, src_dest, msg);
+			}
+			break;
+		case SEND:
+		case RECEIVE:
+			ret = sendrec(function, src_dest, msg);
+		default:
+			assert((function == BOTH) || (function == SEND)
+					|| (function == RECEIVE));
+			break;
+	}
+	return ret;
+}
 
 PUBLIC int memcmp(const void * s1, const void *s2, int n)
 {

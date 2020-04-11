@@ -12,7 +12,7 @@
 #include "hd.h"
 
 PRIVATE void init_idt_desc(u8 vector, u8 desc_type, int_handler handler, u8 privilege);
-PRIVATE void init_descriptor(DESCRIPTOR * p_desc, u32 base, u32 limit, u16 attribute);
+//PRIVATE void init_descriptor(DESCRIPTOR * p_desc, u32 base, u32 limit, u16 attribute);
 
 void	divide_error();
 void	single_step_exception();
@@ -153,13 +153,18 @@ PUBLIC void init_prot()
 		memset(&tss, 0, sizeof(tss));
 		tss.ss0		= SELECTOR_KERNEL_DS;
 		init_descriptor(&gdt[INDEX_TSS],
-				vir2phys(seg2phys(SELECTOR_KERNEL_DS), &tss),
+				vir2phys(seg2linear(SELECTOR_KERNEL_DS), &tss),
 					sizeof(tss) - 1, DA_386TSS);//elf文件会根据程序入口载入地址，自然会带org，&tss会有文件内偏移加程序入口，就是对于整个段的偏移，因为这个段的基地址是0
 		tss.iobase = sizeof(tss);
 		for(int i = 0; i < NR_TASKS+NR_PROCS; ++i){
+		memset(&proc_table[i], 0, sizeof(struct proc));
+
+		proc_table[i].ldt_sel = SELECTOR_LDT_FIRST + (i << 3);
+		assert(INDEX_LDT_FIRST + i < GDT_SIZE);
 		init_descriptor(&gdt[INDEX_LDT_FIRST + i],
-				vir2phys(seg2phys(SELECTOR_KERNEL_DS), proc_table[i].ldts),
-				LDT_SIZE * sizeof(DESCRIPTOR) -1, DA_LDT);
+			  makelinear(SELECTOR_KERNEL_DS, proc_table[i].ldts),
+			  LDT_SIZE * sizeof(struct descriptor) - 1,
+			  DA_LDT);
 		}
 }
 
@@ -173,7 +178,7 @@ PRIVATE void init_idt_desc(u8 vector, u8 desc_type, int_handler handler, u8 priv
 	p_gate->offset_high = (base >> 16) & 0x0ffff;
 }
 
-PRIVATE void init_descriptor(DESCRIPTOR * p_desc, u32 base, u32 limit, u16 attribute){
+PUBLIC void init_descriptor(DESCRIPTOR * p_desc, u32 base, u32 limit, u16 attribute){
 	p_desc->limit_low = limit & 0xffff;
 	p_desc->base_low = base & 0xffff;
 	p_desc->base_mid = (base >> 16) & 0xff;
@@ -182,7 +187,7 @@ PRIVATE void init_descriptor(DESCRIPTOR * p_desc, u32 base, u32 limit, u16 attri
 	p_desc->base_high = base >> 24 & 0xff;
 }
 
-PUBLIC u32 seg2phys(u16 seg){
+PUBLIC u32 seg2linear(u16 seg){
 	DESCRIPTOR *p_desc = &gdt[seg>>3];
 	return (p_desc->base_high<<24 | p_desc->base_mid<<16 | p_desc->base_low);;
 }

@@ -223,7 +223,7 @@ PUBLIC void* va2la(int pid, void* va)
 	u32 seg_base = ldt_seg_linear(p, INDEX_LDT_RW);
 	u32 la = seg_base + (u32)va;
 
-	if (pid < NR_TASKS + NR_PROCS) {
+	if (pid < NR_TASKS + NR_NATIVE_PROCS) {
 		assert(la == (u32)va); //the base address of data ldt(seg_base) should be 0,so the la == va.
 	}
 
@@ -232,29 +232,6 @@ PUBLIC void* va2la(int pid, void* va)
 
 PUBLIC void reset_msg(MESSAGE*  p){
 	memset(p, 0, sizeof(MESSAGE));
-}
-
-PUBLIC int send_recv(int function, int src_dest, MESSAGE* msg){//对sendrec函数的封装
-	int ret = 0;
-	if(function == RECEIVE){
-		memset(msg, 0, sizeof(MESSAGE));
-	}
-	switch(function){
-		case BOTH:
-			ret = sendrec(SEND, src_dest, msg);
-			if(ret == 0){
-				ret = sendrec(RECEIVE, src_dest, msg);
-			}
-			break;
-		case SEND:
-		case RECEIVE:
-			ret = sendrec(function, src_dest, msg);
-		default:
-			assert((function == BOTH) || (function == SEND)
-					|| (function == RECEIVE));
-			break;
-	}
-	return ret;
 }
 
 /*======================================================================*
