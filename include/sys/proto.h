@@ -109,6 +109,9 @@ PUBLIC void	inform_int(int task_nr);
 /* lib/misc.c */
 PUBLIC void spin(char * func_name);
 
+/* mm/exec.c */
+PUBLIC int		do_exec();
+
 /* 以下是系统调用相关 */
 
 /* 系统调用 - 系统级 */

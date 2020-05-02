@@ -66,7 +66,7 @@ global sys_call
 
 _start:
 	mov esp, StackTop
-	sgdt [gdt_ptr]	;将原GDTPTR的值保存到gdt_ptr
+	sgdt [gdt_ptr]	;将原GDTR的地址值保存到gdt_ptr
 	mov dword [disp_pos],0
 	call cstart
 	lgdt [gdt_ptr]

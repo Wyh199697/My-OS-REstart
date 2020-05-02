@@ -9,7 +9,7 @@ LD = ld
 ASMBFLAGS = -I boot/include/
 ASMKFLAGS = -I include/ -I include/sys/ -f elf
 CFLAGS = -I include/ -I include/sys/ -m32 -c -fno-builtin -fno-stack-protector
-LDFLAGS = -m elf_i386 -s -Ttext $(ENTRYPOINT) -e $(ENTRYOFFSET)
+LDFLAGS = -m elf_i386 -s -Ttext $(ENTRYPOINT)
 ARFLAGS		= rcs
 
 ORANGESBOOT = boot/boot.bin boot/loader.bin
@@ -23,16 +23,16 @@ OBJS = kernel/kernel.o lib/syscall.o kernel/start.o kernel/main.o\
 			kernel/kliba.o kernel/klib.o lib/string.o lib/misc.o\
 			lib/open.o lib/close.o lib/read.o lib/write.o\
 			lib/syslog.o lib/getpid.o lib/unlink.o lib/fork.o\
-			lib/wait.o lib/exit.o\
+			lib/wait.o lib/exit.o lib/stat.o lib/exec.o\
 			fs/main.o fs/open.o fs/misc.o fs/read_write.o\
 			fs/disklog.o fs/link.o\
-			mm/main.o mm/forkexit.o
+			mm/main.o mm/forkexit.o mm/exec.o
 LOBJS		=  lib/syscall.o\
 			lib/printf.o lib/vsprintf.o\
 			lib/string.o lib/misc.o\
 			lib/open.o lib/read.o lib/write.o lib/close.o lib/unlink.o\
 			lib/getpid.o \
-			lib/fork.o lib/exit.o lib/wait.o
+			lib/fork.o lib/exit.o lib/wait.o lib/stat.o lib/exec.o
 			
 
 
@@ -44,10 +44,10 @@ all : realclean everything
 
 final : all clean
 
-image : final buildimg
+image : all buildimg clean
 
 clean : 
-	rm -f $(OBJS)
+	rm -f $(OBJS) $(ORANGESBOOT)
 
 realclean : 
 	rm -f $(OBJS) $(LIB) $(ORANGESBOOT) $(ORANGESKERNEL) 80m.img.lock
@@ -182,8 +182,17 @@ lib/wait.o: lib/wait.c
 lib/exit.o: lib/exit.c
 	$(CC) $(CFLAGS) -o $@ $<
 	
+lib/stat.o: lib/stat.c
+	$(CC) $(CFLAGS) -o $@ $<
+	
+lib/exec.o: lib/exec.c
+	$(CC) $(CFLAGS) -o $@ $<
+	
 mm/main.o: mm/main.c
 	$(CC) $(CFLAGS) -o $@ $<
 	
 mm/forkexit.o: mm/forkexit.c
+	$(CC) $(CFLAGS) -o $@ $<
+	
+mm/exec.o: mm/exec.c
 	$(CC) $(CFLAGS) -o $@ $<

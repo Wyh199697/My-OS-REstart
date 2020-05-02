@@ -51,6 +51,9 @@ PUBLIC void task_fs(){
 			case EXIT:
 				fs_msg.RETVAL = fs_exit();
 				break;
+			case STAT:
+				fs_msg.RETVAL = do_stat();
+				break;
 			default:
 				dump_msg("FS::unknown message:", &fs_msg);
 				assert(0);
@@ -176,11 +179,11 @@ PRIVATE void mkfs(){
 	       
 	//初始化inode map
 	memset(fsbuf, 0, SECTOR_SIZE);
-	for(i = 0; i < (NR_CONSOLES + 2); i++){
+	for(i = 0; i < (NR_CONSOLES + 3); i++){
 		fsbuf[0] |= 1 << i;
 	}
 
-	assert(fsbuf[0] == 0X1F);
+	assert(fsbuf[0] == 0X3F);
 	WR_SECT(ROOT_DEV, 2); //写入inode map位图
 
 	//初始化sector map
@@ -200,10 +203,32 @@ PRIVATE void mkfs(){
 		WR_SECT(ROOT_DEV, 2 + sb.nr_imap_sects + i);
 	}
 
+	//cmd.tar
+	assert(INSTALL_START_SECT + INSTALL_NR_SECTS < sb.nr_sects - NR_SECTS_FOR_LOG);
+	int bit_offset = INSTALL_START_SECT - sb.n_1st_sect + 1;
+	int bit_off_in_sect = bit_offset % (SECTOR_SIZE * 8);
+	int bit_left = INSTALL_NR_SECTS;
+	int cur_sect = bit_offset / (SECTOR_SIZE * 8);
+	RD_SECT(ROOT_DEV, 2 + sb.nr_imap_sects + cur_sect);
+	while(bit_left){
+		int byte_off = bit_off_in_sect / 8;
+		fsbuf[byte_off] |= 1 << (bit_off_in_sect % 8);
+		bit_left--;
+		bit_off_in_sect++;
+		if(bit_off_in_sect == (SECTOR_SIZE * 8)){
+			WR_SECT(ROOT_DEV, 2 + sb.nr_imap_sects + cur_sect);
+			cur_sect++;
+			RD_SECT(ROOT_DEV, 2 + sb.nr_imap_sects + cur_sect);
+			bit_off_in_sect = 0;
+		}
+	}
+	WR_SECT(ROOT_DEV, 2 + sb.nr_imap_sects + cur_sect);
+
+	//inodes
 	memset(fsbuf, 0, SECTOR_SIZE);
 	struct inode * pi = (struct inode*)fsbuf;
 	pi->i_mode = I_DIRECTORY;
-	pi->i_size = DIR_ENTRY_SIZE * 4;
+	pi->i_size = DIR_ENTRY_SIZE * 5;
 	pi->i_start_sect = sb.n_1st_sect;
 	pi->i_nr_sects = NR_DEFAULT_FILE_SECTS;
 
@@ -214,8 +239,15 @@ PRIVATE void mkfs(){
 		pi->i_start_sect = MAKE_DEV(DEV_CHAR_TTY, i);
 		pi->i_nr_sects = 0;
 	}
+
+	pi = (struct inode*)(fsbuf + (INODE_SIZE * (NR_CONSOLES + 1)));
+	pi->i_mode = I_REGULAR;
+	pi->i_size = INSTALL_NR_SECTS * SECTOR_SIZE;
+	pi->i_start_sect = INSTALL_START_SECT;
+	pi->i_nr_sects = INSTALL_NR_SECTS;
 	WR_SECT(ROOT_DEV, 2 + sb.nr_imap_sects + sb.nr_smap_sects);
 
+	//dir_entry
 	memset(fsbuf, 0, SECTOR_SIZE);
 	struct dir_entry* pde = (struct dir_entry*)fsbuf;
 	pde->inode_nr = 1;
@@ -226,6 +258,8 @@ PRIVATE void mkfs(){
 		pde->inode_nr = i + 2;
 		sprintf(pde->name, "dev_tty%d", i);
 	}
+	(++pde)->inode_nr = NR_CONSOLES + 2;
+	strcpy(pde->name, "cmd.tar");
 	WR_SECT(ROOT_DEV, sb.n_1st_sect);
 }
 

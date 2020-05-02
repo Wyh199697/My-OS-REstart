@@ -130,7 +130,7 @@ PUBLIC void do_exit(int status){
 	}
 	
 	for(i = 0; i < NR_TASKS + NR_PROCS; i++){
-		if(proc_table[i].p_parent = pid){
+		if(proc_table[i].p_parent == pid){
 			proc_table[i].p_parent = INIT;
 			if((proc_table[INIT].p_flags & WAITING)
 			 && (proc_table[i].p_flags & HANGING)){
@@ -172,5 +172,5 @@ PRIVATE void cleanup(struct proc* proc){
 	msg2parent.STATUS = proc->exit_status;
 	send_recv(SEND, proc->p_parent, &msg2parent);
 	
-	proc->p_flags = FREE_SLOT;
+	proc->p_flags = FREE_SLOT;//清除之后p_parent不清除，所以init调用wait不会报错
 }

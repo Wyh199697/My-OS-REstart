@@ -210,6 +210,7 @@ PUBLIC int sys_printx(int _unused1, int _unused2, char* s, struct proc* p_proc){
 			continue;
 		}
 		out_char(tty_table[p_proc->nr_tty].p_console, ch);
+		//out_char(tty_table[2].p_console, ch);
 	}
 	return 0;
 }

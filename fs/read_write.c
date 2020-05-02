@@ -64,16 +64,27 @@ PUBLIC int do_rdwt(){
 			int bytes = min(bytes_left, chunk * SECTOR_SIZE - off);
 			rw_sector(DEV_READ, pin->i_dev, i * SECTOR_SIZE, chunk * SECTOR_SIZE, TASK_FS, fsbuf);
 			if(fs_msg.type == READ){
-				phys_copy((void*)va2la(src, buf + bytes_rw), (void*)va2la(TASK_FS, fsbuf + off), bytes);
-			}else{
-				phys_copy((void*)va2la(TASK_FS, fsbuf + off), (void*)va2la(src, buf + bytes_rw), bytes);
-				rw_sector(DEV_WRITE, pin->i_dev, i * SECTOR_SIZE, chunk * SECTOR_SIZE, TASK_FS, fsbuf);
+				phys_copy((void*)va2la(src, buf + bytes_rw),
+					  (void*)va2la(TASK_FS, fsbuf + off),
+					  bytes);
+			}
+			else {	/* WRITE */
+				phys_copy((void*)va2la(TASK_FS, fsbuf + off),
+					  (void*)va2la(src, buf + bytes_rw),
+					  bytes);
+				rw_sector(DEV_WRITE,
+					  pin->i_dev,
+					  i * SECTOR_SIZE,
+					  chunk * SECTOR_SIZE,
+					  TASK_FS,
+					  fsbuf);
 			}
 			off = 0;
 			bytes_rw += bytes;
 			pcaller->filp[fd]->fd_pos += bytes;
 			bytes_left -= bytes;
 		}
+
 		if(pcaller->filp[fd]->fd_pos > pin->i_size){
 			pin->i_size = pcaller->filp[fd]->fd_pos;
 			sync_inode(pin);
