@@ -352,9 +352,6 @@ void Init()
 	else {	/* child process */
 		execl("/echo", "echo", "hello", "world",0);
 	}
-	for(int i = 0; i < NR_TASKS + NR_PROCS; i++){
-		printf("%d ", proc_table[i].p_parent);
-	}
 	//printf("1");
 
 	while (1) {

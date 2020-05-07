@@ -8,8 +8,8 @@ DASM		= objdump
 CC		= gcc
 LD		= ld
 ASMFLAGS	= -I ../include/ -f elf
-CFLAGS		= -I ../include/ -c -fno-builtin -fno-stack-protector -Wall
-LDFLAGS		= -Ttext 0x1000
+CFLAGS		= -I ../include/ -m32 -c -fno-builtin -fno-stack-protector -Wall
+LDFLAGS		= -m elf_i386 -Ttext 0x1000
 DASMFLAGS	= -D
 LIB		= ../lib/orangescrt.a
 BIN		= echo pwd
@@ -21,7 +21,7 @@ BIN		= echo pwd
 everything : $(BIN)
 
 install : all clean
-	cp ../kernel.bin ./ -v
+	cp ../kernel/kernel.bin ./ -v
 	tar vcf inst.tar kernel.bin $(BIN)
 	dd if=inst.tar of=$(HD) seek=`echo "obase=10;ibase=16;(\`egrep -e '^ROOT_BASE' ../boot/include/load.inc | sed -e 's/.*0x//g'\`+\`egrep -e '#define[[:space:]]*INSTALL_START_SECT' ../include/sys/config.h | sed -e 's/.*0x//g'\`)*200" | bc` bs=1 count=`ls -l inst.tar | awk -F " " '{print $$5}'` conv=notrunc
 
