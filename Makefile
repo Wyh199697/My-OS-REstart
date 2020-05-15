@@ -8,8 +8,8 @@ CC = gcc
 LD = ld
 ASMBFLAGS = -I boot/include/
 ASMKFLAGS = -I include/ -I include/sys/ -f elf
-CFLAGS = -I include/ -I include/sys/ -m32 -c -fno-builtin -fno-stack-protector
-LDFLAGS = -m elf_i386 -s -Ttext $(ENTRYPOINT)
+CFLAGS = -g -I include/ -I include/sys/ -m32 -c -fno-builtin -fno-stack-protector
+LDFLAGS = -m elf_i386 -Ttext $(ENTRYPOINT)
 ARFLAGS		= rcs
 
 ORANGESBOOT = boot/boot.bin boot/loader.bin

@@ -251,7 +251,7 @@ enum msgtype {
 #define	is_special(m)	((((m) & I_TYPE_MASK) == I_BLOCK_SPECIAL) ||	\
 			 (((m) & I_TYPE_MASK) == I_CHAR_SPECIAL))
 
-#define	NR_DEFAULT_FILE_SECTS	512 /* 2048 * 512 = 1MB */
+#define	NR_DEFAULT_FILE_SECTS	512 /* 512 * 512B = 256KB */
 
 #define	NR_FILES	64
 #define	NR_FILE_DESC	64	/* FIXME */

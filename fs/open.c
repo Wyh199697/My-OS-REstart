@@ -102,7 +102,7 @@ PUBLIC int do_open()
 		f_desc_table[i].fd_inode = pin;
 
 		f_desc_table[i].fd_mode = flags;
-		f_desc_table[i].fd_cnt = 1; 
+		f_desc_table[i].fd_cnt = 1; //只有fork才有可能导致fd_cnt值的增加
 		f_desc_table[i].fd_pos = 0;
 
 		int imode = pin->i_mode & I_TYPE_MASK;
@@ -177,11 +177,14 @@ PRIVATE struct inode * create_file(char * path, int flags)
  * 
  * @return Zero if success.
  *****************************************************************************/
+
+//如果没有进程共享文件描述符，则将此文件描述符的inode指针置0，否则只是将指向此文件描述符的指针置0
 PUBLIC int do_close()
 {
 	int fd = fs_msg.FD;
 	put_inode(pcaller->filp[fd]->fd_inode);
-	pcaller->filp[fd]->fd_inode = 0;
+	if (--pcaller->filp[fd]->fd_cnt == 0)
+		pcaller->filp[fd]->fd_inode = 0;
 	pcaller->filp[fd] = 0;
 
 	return 0;
@@ -346,6 +349,7 @@ PRIVATE int alloc_smap_bit(int dev, int nr_sects_to_alloc)
  *****************************************************************************/
 PRIVATE struct inode * new_inode(int dev, int inode_nr, int start_sect)
 {
+	//将inode_nr号的inode读取到内存，修改属性之后再写回去
 	struct inode * new_inode = get_inode(dev, inode_nr);
 
 	new_inode->i_mode = I_REGULAR;

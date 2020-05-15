@@ -275,7 +275,8 @@ PUBLIC int rw_sector(int io_type, int dev, u64 pos, int bytes, int proc_nr, void
 	send_recv(BOTH, dd_map[MAJOR(dev)].driver_nr, &driver_msg);
 }
 
-//根据inode_nr，返回inode指针，指针指向inode_table一个成员。现将inode_array，读取到内存中，然后根据num选取inode赋值给inode_table一个成员。总共可以打开64个文件。
+//根据inode_nr，返回inode指针，指针指向inode_table一个成员。先将inode_array
+//读取到内存中，然后根据num选取inode赋值给inode_table一个成员。总共可以打开64个文件。
 PUBLIC struct inode* get_inode(int dev, int num){
 	if(num == 0){
 		return 0;
@@ -283,7 +284,8 @@ PUBLIC struct inode* get_inode(int dev, int num){
 	struct inode* p;
 	struct inode* q = 0;
 	for(p = &inode_table[0]; p < &inode_table[NR_INODE]; p++){
-		if(p->i_cnt){//如果有进程占用这个inode
+		if(p->i_cnt){
+			//如果有进程占用这个inode则不需要磁盘中重新寻找inode，直接返回
 			if((p->i_dev == dev) && (p->i_num == num)){
 				p->i_cnt++;
 				return p;

@@ -18,7 +18,7 @@ PRIVATE void cleanup(struct proc * proc);
 PUBLIC int do_fork(){
 	struct proc* p = proc_table;
 	int i;
-	for(i = 0; i < NR_TASKS + NR_NATIVE_PROCS; i++, p++){
+	for(i = 0; i < NR_TASKS + NR_PROCS; i++, p++){
 		if(p->p_flags == FREE_SLOT){
 			break;
 		}
@@ -82,7 +82,6 @@ PUBLIC int do_fork(){
 	printl("{MM} 0x%x <- 0x%x (0x%x bytes)\n",
 	       child_base, caller_T_base, caller_T_size);
 	phys_copy((void*)child_base, (void*)caller_T_base, caller_T_size);
-	
 	init_descriptor(&p->ldts[INDEX_LDT_C],
 		  child_base,
 		  (PROC_IMAGE_SIZE_DEFAULT - 1) >> LIMIT_4K_SHIFT,
@@ -91,7 +90,6 @@ PUBLIC int do_fork(){
 		  child_base,
 		  (PROC_IMAGE_SIZE_DEFAULT - 1) >> LIMIT_4K_SHIFT,
 		  DA_LIMIT_4K | DA_32 | DA_DRW | PRIVILEGE_USER << 5);
-		  
 	MESSAGE msg2fs;
 	msg2fs.type = FORK;
 	msg2fs.PID = child_pid;

@@ -62,6 +62,7 @@ PUBLIC int do_stat()
 	return 0;
 }
 
+//
 PUBLIC int search_file(char* path){
 	int i, j;
 	char filename[MAX_PATH];//文件名
@@ -74,8 +75,8 @@ PUBLIC int search_file(char* path){
 		return dir_inode->i_num;
 	}
 	int dir_blk0_nr = dir_inode->i_start_sect;//文件起始扇区
-	int nr_dir_blks = (dir_inode->i_size + SECTOR_SIZE - 1) / SECTOR_SIZE;//文件占用扇区数
-	int nr_dir_entries = dir_inode->i_size / DIR_ENTRY_SIZE;//文件大小除以文件描述符的大小
+	int nr_dir_blks = (dir_inode->i_size + SECTOR_SIZE - 1) / SECTOR_SIZE;//文件目前占用扇区数
+	int nr_dir_entries = dir_inode->i_size / DIR_ENTRY_SIZE;//根目录大小除以文件描述符的大小
 	int m = 0;
 	struct dir_entry* pde;
 	for(i = 0; i < nr_dir_blks; i++){
@@ -96,6 +97,8 @@ PUBLIC int search_file(char* path){
 	return 0;
 }
 
+
+//从路径上剥离出文件名
 PUBLIC int strip_path(char * filename, const char * path, struct inode** ppinode){
 	const char* s = path;
 	char* t = filename;
@@ -115,6 +118,6 @@ PUBLIC int strip_path(char * filename, const char * path, struct inode** ppinode
 		}
 	}
 	*t = 0;
-	*ppinode = root_inode; //??
+	*ppinode = root_inode; //描述根目录的inode
 	return 0;
 }

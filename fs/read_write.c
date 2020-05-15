@@ -23,7 +23,7 @@ PUBLIC int do_rdwt(){
 	if(!(pcaller->filp[fd]->fd_mode & O_RDWR)){
 		return -1;
 	}
-	//读写文件的为位置
+	//读写文件的位置
 	int pos = pcaller->filp[fd]->fd_pos;
 	struct inode* pin = pcaller->filp[fd]->fd_inode;
 	assert(pin >= &inode_table[0] && pin < &inode_table[NR_INODE]);

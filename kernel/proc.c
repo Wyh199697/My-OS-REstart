@@ -45,7 +45,7 @@ PRIVATE int  msg_send(struct proc* current, int dest, MESSAGE* m){//current主�
 		assert(sender->p_msg == 0);
 		assert(sender->p_recvfrom == NO_TASK);
 		assert(sender->p_sendto == NO_TASK);
-	}else{//2.因为p还不是receiving状态，所以进入这里，那么是否会发生死锁
+	}else{
 		sender->p_flags |= SENDING;
 		assert(sender->p_flags == SENDING);
 		sender->p_sendto = dest;
@@ -249,7 +249,7 @@ PUBLIC void schedule(){
 	while(!greatest_ticks){
 		for(p = &FIRST_PROC; p <= &LAST_PROC; ++p){
 			if(p->p_flags == 0){
-				if(p->ticks > greatest_ticks){//选出ticks最多的那个进程
+				if(p->ticks > greatest_ticks){//选出ticks最多而且flags为0的那个进程
 					greatest_ticks = p->ticks;
 					p_proc_ready = p;
 				}
@@ -318,7 +318,7 @@ PUBLIC void inform_int(int task_nr){
 		assert(p->p_recvfrom == NO_TASK);
 		assert(p->p_sendto == NO_TASK);
 	}else{
-		p->has_int_msg = 1;
+		p->has_int_msg = 1;//相当于发送中断的机制在SENDING
 	}
 }
 

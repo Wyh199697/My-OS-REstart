@@ -24,17 +24,18 @@ PUBLIC int exec(const char* path){
 	return msg.RETVAL;
 }
 
+//第二个字符串无关紧要，第一个参数是文件路径，第三个开始是参数
 PUBLIC int execl(const char* path, const char* arg, ...){
 	va_list parg = (va_list)(&arg);
 	char **p = (char**)parg;
 	return execv(path, p);
 }
 
+//第一个参数是文件路径，argv第一个字符串不参与参数
 PUBLIC int execv(const char* path, char* argv[]){
 	char **p = argv;
 	char arg_stack[PROC_ORIGIN_STACK];
 	int stack_len = 0;
-
 	while(*p++){
 		assert(stack_len + 2 * sizeof(char*) < PROC_ORIGIN_STACK);
 		stack_len += sizeof(char*);

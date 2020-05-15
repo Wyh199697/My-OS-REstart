@@ -263,7 +263,7 @@ PRIVATE void hd_close(int device){
 	hd_info[drive].open_cnt--;
 }
 
-PRIVATE void hd_rdwt(MESSAGE* p){
+PRIVATE void hd_rdwt(MESSAGE* p){//这个os的硬盘io模型是同步阻塞型io，先给硬盘发送读写指令。1.硬盘在读取数据到数据寄存器之前进程阻塞。2.硬盘在从数据寄存器读取并写入硬盘之前进程阻塞。
 	int drive = DRV_OF_DEV(p->DEVICE);
 	u64 pos = p->POSITION;
 	assert((pos >> SECTOR_SIZE_SHIFT) < (1 << 31));
@@ -284,17 +284,20 @@ PRIVATE void hd_rdwt(MESSAGE* p){
 	hd_cmd_out(&cmd);
 
 	int bytes_left = p->CNT; //剩余字节数量
-	void* la = (void*)va2la(p->PROC_NR, p->BUF); //接受或者要写入的字节数组
+	void* la = (void*)va2la(p->PROC_NR, p->BUF); //接收或者要写入的字节数组，内存地址在用户态
 	while(bytes_left){
 		int bytes = min(SECTOR_SIZE, bytes_left); //要接收或者写入的字节数量
+		//硬盘在读取数据到数据寄存器之前进程阻塞
 		if(p->type == DEV_READ){
 			interrupt_wait();
-			port_read(REG_DATA, hdbuf, SECTOR_SIZE); //读取一个扇区
-			phys_copy(la, (void*)va2la(TASK_HD, hdbuf), bytes); //复制到接受数组
+			//以下两个步骤都是"将数据从内核拷贝到进程中"
+			port_read(REG_DATA, hdbuf, SECTOR_SIZE); //一次读取一个扇区
+			phys_copy(la, (void*)va2la(TASK_HD, hdbuf), bytes); //复制到接收数组
 		}else{
 			if(!waitfor(STATUS_DRQ, STATUS_DRQ, HD_TIMEOUT)){
 				panic("hd writing error.");
 			}
+			//硬盘在从数据寄存器读取并写入硬盘之前进程阻塞。
 			port_write(REG_DATA, la, bytes);
 			interrupt_wait();
 		}	

@@ -15,10 +15,11 @@
 #define TTY_END		(tty_table + NR_CONSOLES)
 
 PRIVATE void init_tty(TTY* p_tty);
-PRIVATE void	tty_dev_read	(TTY* tty);
-PRIVATE void	tty_dev_write	(TTY* tty);
-PRIVATE void tty_do_read(TTY* tty, MESSAGE* msg);
-PRIVATE void tty_do_write(TTY* tty, MESSAGE* msg);
+PRIVATE void	tty_dev_read	(TTY* tty);//从键盘读
+PRIVATE void	tty_dev_write	(TTY* tty);//写入tty
+//上面两个函数配合下面tty_do_read工作
+PRIVATE void tty_do_read(TTY* tty, MESSAGE* msg);//从tty读取到用户内存
+PRIVATE void tty_do_write(TTY* tty, MESSAGE* msg);//用户内存写入到tty
 PRIVATE void put_key(TTY* p_tty, u32 key);
 
 PUBLIC void task_tty(){
@@ -67,10 +68,17 @@ PUBLIC void task_tty(){
 	}
 }
 
-PRIVATE void init_tty(TTY* p_tty){
-	p_tty->inbuf_count = 0;
-	p_tty->p_inbuf_head = p_tty->p_inbuf_tail = p_tty->in_buf;
-	init_screen(p_tty);
+PRIVATE void init_tty(TTY* tty){
+	tty->inbuf_count = 0;
+	tty->p_inbuf_head = tty->p_inbuf_tail = tty->in_buf;
+
+	tty->tty_caller = NO_TASK;
+	tty->tty_procnr = NO_TASK;
+	tty->tty_req_buf = 0;
+	tty->tty_left_cnt = 0;
+	tty->tty_trans_cnt = 0;
+
+	init_screen(tty);
 }
 
 PRIVATE void tty_do_read(TTY* tty, MESSAGE* msg){
@@ -209,7 +217,7 @@ PUBLIC int sys_printx(int _unused1, int _unused2, char* s, struct proc* p_proc){
 		if(ch == MAG_CH_PANIC || ch == MAG_CH_ASSERT){
 			continue;
 		}
-		out_char(tty_table[p_proc->nr_tty].p_console, ch);
+		out_char(TTY_FIRST->p_console, ch);
 		//out_char(tty_table[2].p_console, ch);
 	}
 	return 0;
@@ -221,6 +229,23 @@ PRIVATE void tty_dev_read (TTY* tty){
 	}
 }
 
+/*
+typedef struct s_tty{
+	u32		in_buf[TTY_IN_BYTES];//ibuf
+	u32*	p_inbuf_head;	//ibuf_head
+	u32*	p_inbuf_tail;	//ibuf_tail
+//	int		in_inbuf_tail;	
+	int		inbuf_count;	//ibuf_cnt
+
+	int tty_caller;
+	int tty_procnr;
+	void* tty_req_buf;
+	int tty_left_cnt;
+	int tty_trans_cnt;
+
+	struct s_console*	p_console;
+}TTY;
+*/
 PRIVATE void tty_dev_write(TTY* tty)
 {
 	while (tty->inbuf_count) {
@@ -233,9 +258,12 @@ PRIVATE void tty_dev_write(TTY* tty)
 		if (tty->tty_left_cnt) {
 			if (ch >= ' ' && ch <= '~') { /* printable */
 				out_char(tty->p_console, ch);
+
+				assert(tty->tty_req_buf);
 				void * p = tty->tty_req_buf +
 					   tty->tty_trans_cnt;
 				phys_copy(p, (void *)va2la(TASK_TTY, &ch), 1);
+
 				tty->tty_trans_cnt++;
 				tty->tty_left_cnt--;
 			}
@@ -247,6 +275,8 @@ PRIVATE void tty_dev_write(TTY* tty)
 
 			if (ch == '\n' || tty->tty_left_cnt == 0) {
 				out_char(tty->p_console, '\n');
+
+				assert(tty->tty_procnr != NO_TASK);
 				MESSAGE msg;
 				msg.type = RESUME_PROC;
 				msg.PROC_NR = tty->tty_procnr;

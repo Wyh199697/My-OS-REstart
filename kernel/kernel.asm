@@ -354,6 +354,7 @@ save:
 	push restart_reenter
 	jmp [esi+RETADR - P_STACKBASE]
 
+;restart只比restart_reenter多了4条代码，4条切换到p_proc_ready进程的代码
 restart:
 	mov esp, [p_proc_ready]
 	lldt [esp + P_LDT_SEL]
