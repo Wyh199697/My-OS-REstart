@@ -33,7 +33,6 @@ PUBLIC int do_rdwt(){
 		fs_msg.type = t;
 		int dev = pin->i_start_sect;//?
 		assert(MAJOR(dev) == 4);
-
 		fs_msg.DEVICE = MINOR(dev);
 		fs_msg.BUF = buf;
 		fs_msg.CNT = len;
